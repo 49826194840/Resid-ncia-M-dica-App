@@ -1254,8 +1254,7 @@ function renderDetail(nome) {
   document.getElementById('det-total-a').textContent = totalA || '—';
   document.getElementById('det-total-e').textContent = totalE || '—';
 
-  // Evolution bars
-  const   // Build bars from marks (primary) or pct fields (fallback)
+  // Build bars from marks (primary) or pct fields (fallback)
   const rlm = {R1:'Pós Aula',R2:'2ª Rev.',R3:'3ª Rev.',R4:'4ª Rev.',R5:'5ª Rev.',R6:'6ª Rev.',R7:'7ª Rev.'};
   const fbp = {R1:tema.pct_pa, R2:tema.pct_r1, R3:tema.pct_r2, R4:tema.pct_r3, R5:tema.pct_r4, R6:tema.pct_r5, R7:tema.pct_r6};
   const allRevData = REV_KEYS.map(k => {
@@ -1264,7 +1263,7 @@ function renderDetail(nome) {
     return pct ? {label: rlm[k], pct, key: k} : null;
   }).filter(Boolean);
 
-    const barsEl = document.getElementById('evoBars');
+  const barsEl = document.getElementById('evoBars');
   const lblsEl = document.getElementById('evoLbls');
   if(!allRevData.length) {
     barsEl.innerHTML='<div style="color:var(--dim);font-size:0.8rem;text-align:center;width:100%">Sem dados de questões ainda</div>';
