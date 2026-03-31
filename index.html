@@ -1984,8 +1984,26 @@ async function startApp(user) {
 }
 
 function showLoadingOverlay(v) {
-  document.getElementById('loadingOverlay').style.display = v ? 'flex' : 'none';
+  const el = document.getElementById('loadingOverlay');
+  if (v) {
+    el.style.display = 'flex';
+    // Safety net: never stay loading more than 5 seconds
+    clearTimeout(window._loadTimeout);
+    window._loadTimeout = setTimeout(() => {
+      el.style.display = 'none';
+    }, 5000);
+  } else {
+    clearTimeout(window._loadTimeout);
+    el.style.display = 'none';
+  }
 }
+
+// When user comes back to the tab, hide loading if app already started
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden && currentUser) {
+    showLoadingOverlay(false);
+  }
+});
 
 initAuth();
 </script>
