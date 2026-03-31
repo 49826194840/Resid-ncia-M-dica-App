@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ResidênciaApp — Matheus</title>
+<title>ResidênciaApp</title>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -1839,13 +1839,22 @@ function renderAnalise() {
     });
   });
 
+  // Somar simulados nos totais gerais
+  const sims = marked.__simulados || [];
+  const simQ = sims.reduce((s,x) => s+(x.q||0), 0);
+  const simA = sims.reduce((s,x) => s+(x.a||0), 0);
+  const simE = sims.reduce((s,x) => s+(x.e||0), 0);
+  totalQ += simQ;
+  totalA += simA;
+  totalE += simE;
+
   const mediaGeral = pctValues.length ? (pctValues.reduce((a,b)=>a+b,0)/pctValues.length).toFixed(1) : '—';
   const mediaCls = parseFloat(mediaGeral)>=75?'var(--green)':parseFloat(mediaGeral)>=60?'var(--gold)':'var(--red)';
 
   // KPIs
   document.getElementById('analiseKpis').innerHTML = `
     <div class="stat-card"><div class="stat-lbl">% Médio Geral</div><div class="stat-val" style="color:${mediaCls}">${mediaGeral}%</div><div class="stat-sub">${temCount} temas com dados</div></div>
-    <div class="stat-card"><div class="stat-lbl">Total Questões</div><div class="stat-val" style="color:var(--blue)">${totalQ}</div><div class="stat-sub">questões respondidas</div></div>
+    <div class="stat-card"><div class="stat-lbl">Total Questões</div><div class="stat-val" style="color:var(--blue)">${totalQ}</div><div class="stat-sub">${simQ ? `incl. ${simQ} de ${sims.length} simulado${sims.length!==1?'s':''}` : 'questões respondidas'}</div></div>
     <div class="stat-card"><div class="stat-lbl">Total Acertos</div><div class="stat-val" style="color:var(--green)">${totalA}</div><div class="stat-sub">${totalQ?((totalA/totalQ*100).toFixed(1))+'% de aproveitamento':''}</div></div>
     <div class="stat-card"><div class="stat-lbl">Total Erros</div><div class="stat-val" style="color:var(--red)">${totalE}</div><div class="stat-sub">questões erradas</div></div>
   `;
