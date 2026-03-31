@@ -327,6 +327,11 @@ tbody tr:hover{background:rgba(255,255,255,0.018);}
     <small id="brandUser">...</small>
   </div>
   <div class="topbar-right">
+    <!-- GLOBAL SEARCH -->
+    <div style="position:relative;">
+      <input type="text" id="globalSearch" placeholder="🔍 Buscar tema..." oninput="onGlobalSearch()" onfocus="showGlobalResults()" style="background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:0.3rem 1rem;color:var(--text);font-family:inherit;font-size:0.78rem;outline:none;width:200px;transition:all 0.2s;" onfocusin="this.style.borderColor='var(--green)';this.style.width='260px'" onfocusout="setTimeout(()=>{this.style.borderColor='var(--border)';this.style.width='200px';hideGlobalResults()},200)">
+      <div id="globalResults" style="display:none;position:absolute;top:calc(100% + 6px);right:0;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r);min-width:280px;max-height:300px;overflow-y:auto;z-index:200;box-shadow:0 8px 24px rgba(0,0,0,0.5);"></div>
+    </div>
     <div id="streakBadge" style="display:none;align-items:center;gap:6px;background:rgba(255,201,71,0.12);border:1px solid rgba(255,201,71,0.3);color:var(--gold);padding:0.25rem 0.85rem;border-radius:20px;font-size:0.78rem;font-weight:700;cursor:default;" title="Dias consecutivos com revisões marcadas">
       🔥 <span id="streakCount">0</span> dias seguidos
     </div>
@@ -587,57 +592,70 @@ tbody tr:hover{background:rgba(255,255,255,0.018);}
   <!-- KPI row -->
   <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem;font-size:1rem;" id="analiseKpis"></div>
 
-  <!-- % por Revisão por Tema table -->
-  <div class="tbl-wrap" style="margin-bottom:1.25rem;">
-    <div style="padding:1rem 1.25rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
-      <div style="font-size:1rem;font-weight:700;color:var(--text);">📊 % de Acertos por Revisão — Todos os Temas</div>
+  <!-- RETENÇÃO POR REVISÃO -->
+  <div class="tbl-wrap" style="margin-bottom:1rem;">
+    <div onclick="toggleSection('retencaoSection','retencaoChevron')" style="padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;" onmouseover="this.style.background='rgba(255,255,255,0.02)'" onmouseout="this.style.background=''">
+      <div style="font-size:1rem;font-weight:700;color:var(--text);">📈 % de Retenção por Revisão</div>
+      <span id="retencaoChevron" style="color:var(--muted);font-size:1.1rem;transition:transform 0.2s;">▾</span>
     </div>
-    <div style="overflow-x:auto;">
-      <table id="revPercTable" style="min-width:900px;font-size:0.88rem;">
+    <div id="retencaoSection" style="padding:1.25rem;border-top:1px solid var(--border);">
+      <div style="font-size:0.82rem;color:var(--muted);margin-bottom:1.25rem;">Média de acertos de todos os temas em cada etapa de revisão (soma dos acertos ÷ total de questões)</div>
+      <div id="retencaoChart" style="display:flex;align-items:flex-end;gap:10px;height:150px;"></div>
+      <div id="retencaoLbls" style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap;"></div>
+    </div>
+  </div>
+
+  <!-- % por Revisão por Tema (collapsible) -->
+  <div class="tbl-wrap" style="margin-bottom:1rem;">
+    <div onclick="toggleSection('revPercSection','revPercChevron')" style="padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;" onmouseover="this.style.background='rgba(255,255,255,0.02)'" onmouseout="this.style.background=''">
+      <div style="font-size:1rem;font-weight:700;color:var(--text);">📊 % de Acertos por Revisão — Todos os Temas</div>
+      <span id="revPercChevron" style="color:var(--muted);font-size:1.1rem;transition:transform 0.2s;">▸</span>
+    </div>
+    <div id="revPercSection" style="display:none;border-top:1px solid var(--border);overflow-x:auto;">
+      <table id="revPercTable" style="min-width:950px;font-size:0.88rem;">
         <thead><tr>
           <th style="text-align:left;min-width:200px">Tema</th>
           <th style="text-align:center">% Geral</th>
-          <th style="text-align:center">P.A.</th>
-          <th style="text-align:center">R1</th>
-          <th style="text-align:center">R2</th>
-          <th style="text-align:center">R3</th>
-          <th style="text-align:center">R4</th>
-          <th style="text-align:center">R5</th>
-          <th style="text-align:center">R6</th>
+          <th style="text-align:center">Pós Aula</th>
+          <th style="text-align:center">2ª Rev.</th>
+          <th style="text-align:center">3ª Rev.</th>
+          <th style="text-align:center">4ª Rev.</th>
+          <th style="text-align:center">5ª Rev.</th>
+          <th style="text-align:center">6ª Rev.</th>
+          <th style="text-align:center">7ª Rev.</th>
         </tr></thead>
         <tbody id="revPercBody"></tbody>
       </table>
     </div>
   </div>
 
-  <!-- Temas com Menor % — hidden, popup on click -->
-  <div style="margin-bottom:1.25rem;text-align:right;">
-    <button onclick="toggleWeakPopup()" style="background:var(--red3);border:1px solid rgba(255,83,112,0.4);color:var(--red);border-radius:var(--r);padding:0.45rem 1rem;font-family:inherit;font-size:0.88rem;font-weight:600;cursor:pointer;">⚠️ Ver Temas com Menor % Geral</button>
-  </div>
-
-  <!-- Weak temas popup -->
-  <div id="weakPopup" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:600;align-items:center;justify-content:center;backdrop-filter:blur(4px);">
-    <div style="background:var(--bg2);border:1px solid var(--border2);border-radius:14px;width:480px;max-width:95vw;max-height:80vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,0.6);animation:mUp 0.2s ease;">
-      <div style="padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
-        <div style="font-size:1rem;font-weight:700;color:var(--red)">⚠️ Temas com Menor % Geral</div>
-        <button onclick="toggleWeakPopup()" style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:0.3rem 0.75rem;color:var(--muted);font-family:inherit;font-size:0.82rem;cursor:pointer;">Fechar ✕</button>
-      </div>
-      <div style="padding:1.25rem 1.5rem;" id="weakTemas"></div>
+  <!-- Temas com Menor % (collapsible) -->
+  <div class="tbl-wrap" style="margin-bottom:1rem;">
+    <div onclick="toggleSection('weakSection','weakChevron')" style="padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;" onmouseover="this.style.background='rgba(255,255,255,0.02)'" onmouseout="this.style.background=''">
+      <div style="font-size:1rem;font-weight:700;color:var(--red);">⚠️ Temas com Menor % Geral</div>
+      <span id="weakChevron" style="color:var(--muted);font-size:1.1rem;transition:transform 0.2s;">▸</span>
+    </div>
+    <div id="weakSection" style="display:none;padding:1.25rem;border-top:1px solid var(--border);">
+      <div id="weakTemas"></div>
     </div>
   </div>
 
-  <canvas id="chartTemas" style="display:none" height="0"></canvas>
-
-  <!-- All temas performance table -->
-  <div class="tbl-wrap">
-    <div class="card-hdr"><span class="card-title">Desempenho por Tema</span></div>
-    <div style="overflow-x:auto">
-      <table style="min-width:600px">
+  <!-- Desempenho por Tema (collapsible) -->
+  <div class="tbl-wrap" style="margin-bottom:1rem;">
+    <div onclick="toggleSection('analiseBodySection','analiseChevron')" style="padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;" onmouseover="this.style.background='rgba(255,255,255,0.02)'" onmouseout="this.style.background=''">
+      <div style="font-size:1rem;font-weight:700;color:var(--text);">🏆 Desempenho por Tema</div>
+      <span id="analiseChevron" style="color:var(--muted);font-size:1.1rem;transition:transform 0.2s;">▸</span>
+    </div>
+    <div id="analiseBodySection" style="display:none;border-top:1px solid var(--border);overflow-x:auto;">
+      <table style="min-width:600px;">
         <thead><tr><th>#</th><th>Tema</th><th>% Geral</th><th>Total Q</th><th>Acertos</th><th>Erros</th><th>Revisões Feitas</th><th>Tendência</th></tr></thead>
         <tbody id="analiseBody"></tbody>
       </table>
     </div>
   </div>
+
+  <div id="weakPopup" style="display:none;"></div>
+  <canvas id="chartTemas" style="display:none" height="0"></canvas>
 </div>
 
 </div><!-- /content -->
@@ -687,6 +705,9 @@ tbody tr:hover{background:rgba(255,255,255,0.018);}
       <p id="modalSub"></p>
     </div>
     <div class="modal-body">
+      <div id="mSuggestion" style="background:var(--blue3);border:1px solid rgba(56,182,255,0.25);border-radius:var(--r);padding:0.5rem 0.85rem;margin-bottom:0.85rem;font-size:0.8rem;color:var(--blue);display:none;">
+        💡 Sugestão: <span id="mSuggestionText"></span>
+      </div>
       <div class="m-grid">
         <div class="m-field"><label>Total Q</label><input type="number" id="mQ" min="0" placeholder="30" oninput="calcPct()"></div>
         <div class="m-field"><label>Acertos ✓</label><input type="number" id="mA" min="0" placeholder="24" oninput="calcPct()"></div>
@@ -1093,8 +1114,8 @@ function renderDetail(nome) {
 
   // Evolution bars
   const allRevData = [
-    {label:'P.A', pct: tema.pct_pa},
-    {label:'R1', pct: tema.pct_r1},
+    {label:'Pós Aula', pct: tema.pct_pa},
+    {label:'2ª Rev.', pct: tema.pct_r1},
     {label:'R2', pct: tema.pct_r2},
     {label:'R3', pct: tema.pct_r3},
     {label:'R4', pct: tema.pct_r4},
@@ -1130,7 +1151,7 @@ function renderDetail(nome) {
   }
 
   // Rev table
-  const REV_LABELS = {R1:'1ª Revisão (+1d)',R2:'2ª Revisão (+3d)',R3:'3ª Revisão (+7d)',R4:'4ª Revisão (+15d)',R5:'5ª Revisão (+30d)',R6:'6ª Revisão (+90d)',R7:'7ª Revisão (+120d)'};
+  const REV_LABELS = {R1:'Pós Aula — 1ª Revisão (+1d)',R2:'2ª Revisão (+3d)',R3:'3ª Revisão (+7d)',R4:'4ª Revisão (+15d)',R5:'5ª Revisão (+30d)',R6:'6ª Revisão (+90d)',R7:'7ª Revisão (+120d)'};
   const tb = document.getElementById('detRevBody');
   tb.innerHTML = revs.map(e=>{
     const s = revStatus(e);
@@ -1229,11 +1250,21 @@ function confirmEditNome() {
 // ═══════════════════════════════════
 function openModal(nome, key) {
   pendMark = {nome, key};
-  const REV_LABELS = {R1:'1ª Revisão',R2:'2ª Revisão',R3:'3ª Revisão',R4:'4ª Revisão',R5:'5ª Revisão',R6:'6ª Revisão',R7:'7ª Revisão'};
+  const REV_LABELS = {R1:'Pós Aula (1ª Revisão)',R2:'2ª Revisão',R3:'3ª Revisão',R4:'4ª Revisão',R5:'5ª Revisão',R6:'6ª Revisão',R7:'7ª Revisão'};
+  const Q_SUGGEST = {R1:30, R2:30, R3:25, R4:20, R5:20, R6:15, R7:15};
   document.getElementById('modalSub').textContent = `${nome} — ${REV_LABELS[key]||key}`;
   ['mQ','mA','mE'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('mPct').textContent='— %';
   document.getElementById('mPct').style.color='var(--muted)';
+  // Show suggestion
+  const sugEl = document.getElementById('mSuggestion');
+  const sugTxt = document.getElementById('mSuggestionText');
+  if (Q_SUGGEST[key]) {
+    sugTxt.textContent = `${Q_SUGGEST[key]} questões para esta revisão`;
+    sugEl.style.display = 'block';
+  } else {
+    sugEl.style.display = 'none';
+  }
   document.getElementById('modalBg').classList.add('open');
   document.getElementById('mQ').focus();
 }
@@ -1660,6 +1691,61 @@ function renderAnalise() {
   `;
 
   // Canvas chart hidden (removed per request)
+
+  // ── RETENÇÃO POR REVISÃO (gráfico de barras) ──
+  const revKeys = ['R1','R2','R3','R4','R5','R6','R7'];
+  const revLabelsRet = ['Pós Aula','2ª Rev.','3ª Rev.','4ª Rev.','5ª Rev.','6ª Rev.','7ª Rev.'];
+  const pctBaseKeys = ['pct_pa','pct_r1','pct_r2','pct_r3','pct_r4','pct_r5','pct_r6'];
+
+  // For each revision slot, sum all Q and all A across all temas
+  const retData = revLabelsRet.map((label, i) => {
+    let totalQ = 0, totalA = 0, count = 0;
+    temas.forEach(t => {
+      // Try base pct data (as proxy since we don't have Q/A breakdown for base)
+      const pctStr = t[pctBaseKeys[i]];
+      if (pctStr) {
+        const pct = parseFloat(pctStr.replace(',','.'));
+        if (!isNaN(pct)) { totalQ += 100; totalA += pct; count++; }
+      }
+      // Also check manual marks for this revision slot
+      const revKey = revKeys[i];
+      const mk = marked[`${t.conteudo}::${revKey}`];
+      if (mk && mk.q && !mk.fromBase) {
+        totalQ += mk.q;
+        totalA += (mk.a || 0);
+      }
+    });
+    const avg = totalQ > 0 ? (totalA / totalQ * 100) : null;
+    return { label, avg, count };
+  }).filter(d => d.avg !== null);
+
+  const chartEl = document.getElementById('retencaoChart');
+  const lblsEl2 = document.getElementById('retencaoLbls');
+
+  if (!retData.length) {
+    chartEl.innerHTML = '<div style="color:var(--dim);font-size:0.85rem;width:100%;text-align:center;padding:2rem">Sem dados suficientes ainda. Registre questões nas revisões para ver o gráfico.</div>';
+    lblsEl2.innerHTML = '';
+  } else {
+    const maxV = Math.max(...retData.map(d => d.avg));
+    chartEl.innerHTML = retData.map(d => {
+      let col;
+      if(d.avg>=85) col='#00e08a';
+      else if(d.avg>=80) col='#7be3b5';
+      else if(d.avg>=75) col='#ffc947';
+      else col='#ff5370';
+      const h = Math.max(8, (d.avg / 100) * 130);
+      return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:50px;">
+        <span style="font-size:0.78rem;font-weight:700;color:${col}">${d.avg.toFixed(1)}%</span>
+        <div style="width:100%;background:var(--bg4);border-radius:6px 6px 0 0;display:flex;align-items:flex-end;height:130px;">
+          <div style="width:100%;height:${h}px;background:${col};border-radius:6px 6px 0 0;opacity:0.85;transition:height 0.5s ease;"></div>
+        </div>
+      </div>`;
+    }).join('');
+    lblsEl2.innerHTML = retData.map(d =>
+      `<div style="flex:1;text-align:center;font-size:0.72rem;color:var(--muted);min-width:50px;">${d.label}</div>`
+    ).join('');
+  }
+
   // Weak temas list (shown in popup)
   const weak = [...temas].filter(t=>t.pct_tema)
     .sort((a,b)=>parseFloat(a.pct_tema.replace(',','.'))-parseFloat(b.pct_tema.replace(',','.')))
@@ -1688,6 +1774,7 @@ function renderAnalise() {
   const sortedForTable = [...temas].filter(t=>t.pct_tema)
     .sort((a,b)=>parseFloat(b.pct_tema.replace(',','.'))-parseFloat(a.pct_tema.replace(',','.')));
 
+  // revPercBody column headers corrected
   function pctCell(v) {
     if(!v) return '<td style="text-align:center;color:rgba(255,255,255,0.15);font-size:0.8rem">—</td>';
     const n = parseFloat(v.replace(',','.'));
@@ -1762,6 +1849,52 @@ function renderAnalise() {
 }
 
 // ═══════════════════════════════════
+// BUSCA GLOBAL
+// ═══════════════════════════════════
+function onGlobalSearch() {
+  const q = (document.getElementById('globalSearch').value || '').toLowerCase().trim();
+  const resultsEl = document.getElementById('globalResults');
+  if (!q || q.length < 2) { resultsEl.style.display = 'none'; return; }
+  const temas = allTemas().filter(t => t.conteudo.toLowerCase().includes(q));
+  if (!temas.length) {
+    resultsEl.innerHTML = '<div style="padding:1rem;color:var(--dim);font-size:0.82rem;text-align:center">Nenhum tema encontrado</div>';
+  } else {
+    resultsEl.innerHTML = temas.map(t => {
+      const s = temaStatus(t);
+      const dot = s==='hoje'?'🔵':s==='atrasado'?'🔴':s==='done'?'🟢':'⚪';
+      return `<div onclick="globalSelectTema('${t.conteudo.replace(/'/g,"\'")}') " style="padding:0.55rem 1rem;cursor:pointer;font-size:0.84rem;border-bottom:1px solid rgba(28,48,72,0.4);display:flex;align-items:center;gap:8px;transition:background 0.1s;" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">${dot} <span style="flex:1">${t.conteudo}</span><span style="font-size:0.7rem;color:var(--muted)">${t.pct_tema||''}</span></div>`;
+    }).join('');
+  }
+  resultsEl.style.display = 'block';
+}
+
+function globalSelectTema(nome) {
+  document.getElementById('globalSearch').value = '';
+  document.getElementById('globalResults').style.display = 'none';
+  goDetail(nome);
+}
+
+function showGlobalResults() {
+  const q = (document.getElementById('globalSearch').value || '').trim();
+  if (q.length >= 2) onGlobalSearch();
+}
+
+function hideGlobalResults() {
+  document.getElementById('globalResults').style.display = 'none';
+}
+
+// ═══════════════════════════════════
+// COLLAPSIBLE SECTIONS
+// ═══════════════════════════════════
+function toggleSection(sectionId, chevronId) {
+  const sec = document.getElementById(sectionId);
+  const chev = document.getElementById(chevronId);
+  const isOpen = sec.style.display !== 'none';
+  sec.style.display = isOpen ? 'none' : (sectionId === 'retencaoSection' ? 'block' : 'block');
+  if (chev) chev.textContent = isOpen ? '▸' : '▾';
+}
+
+// ═══════════════════════════════════
 // WEAK POPUP TOGGLE
 // ═══════════════════════════════════
 function toggleWeakPopup() {
@@ -1810,6 +1943,52 @@ function deleteTema(nome) {
   if (document.getElementById('page-detalhe').classList.contains('active')) {
     goPage('temas', null);
   }
+}
+
+// ═══════════════════════════════════
+// BUSCA GLOBAL
+// ═══════════════════════════════════
+function onGlobalSearch() {
+  const q = (document.getElementById('globalSearch').value || '').toLowerCase().trim();
+  const resultsEl = document.getElementById('globalResults');
+  if (!q || q.length < 2) { resultsEl.style.display = 'none'; return; }
+  const temas = allTemas().filter(t => t.conteudo.toLowerCase().includes(q));
+  if (!temas.length) {
+    resultsEl.innerHTML = '<div style="padding:1rem;color:var(--dim);font-size:0.82rem;text-align:center">Nenhum tema encontrado</div>';
+  } else {
+    resultsEl.innerHTML = temas.map(t => {
+      const s = temaStatus(t);
+      const dot = s==='hoje'?'🔵':s==='atrasado'?'🔴':s==='done'?'🟢':'⚪';
+      return `<div onclick="globalSelectTema('${t.conteudo.replace(/'/g,"\'")}') " style="padding:0.55rem 1rem;cursor:pointer;font-size:0.84rem;border-bottom:1px solid rgba(28,48,72,0.4);display:flex;align-items:center;gap:8px;transition:background 0.1s;" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">${dot} <span style="flex:1">${t.conteudo}</span><span style="font-size:0.7rem;color:var(--muted)">${t.pct_tema||''}</span></div>`;
+    }).join('');
+  }
+  resultsEl.style.display = 'block';
+}
+
+function globalSelectTema(nome) {
+  document.getElementById('globalSearch').value = '';
+  document.getElementById('globalResults').style.display = 'none';
+  goDetail(nome);
+}
+
+function showGlobalResults() {
+  const q = (document.getElementById('globalSearch').value || '').trim();
+  if (q.length >= 2) onGlobalSearch();
+}
+
+function hideGlobalResults() {
+  document.getElementById('globalResults').style.display = 'none';
+}
+
+// ═══════════════════════════════════
+// COLLAPSIBLE SECTIONS
+// ═══════════════════════════════════
+function toggleSection(sectionId, chevronId) {
+  const sec = document.getElementById(sectionId);
+  const chev = document.getElementById(chevronId);
+  const isOpen = sec.style.display !== 'none';
+  sec.style.display = isOpen ? 'none' : (sectionId === 'retencaoSection' ? 'block' : 'block');
+  if (chev) chev.textContent = isOpen ? '▸' : '▾';
 }
 
 // ═══════════════════════════════════
@@ -1866,7 +2045,7 @@ function deleteTema(nome) {
 // ═══════════════════════════════════
 function exportCSV() {
   const rows = [['Tema','Data Estudo','Revisão','Data Revisão','Status','% Acerto','Questões','Acertos','Erros']];
-  const REV_LABELS_CSV = {R1:'R1 (+1d)',R2:'R2 (+3d)',R3:'R3 (+7d)',R4:'R4 (+15d)',R5:'R5 (+30d)',R6:'R6 (+90d)',R7:'R7 (+120d)'};
+  const REV_LABELS_CSV = {R1:'Pós Aula (+1d)',R2:'R2 (+3d)',R3:'R3 (+7d)',R4:'R4 (+15d)',R5:'R5 (+30d)',R6:'R6 (+90d)',R7:'R7 (+120d)'};
 
   allTemas().forEach(t => {
     getRevList(t).forEach(e => {
