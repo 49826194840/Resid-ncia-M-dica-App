@@ -864,11 +864,18 @@ let _saveTimer = null;
 
 async function loadFromSupabase() {
   if (!currentUser) return;
+  // SEMPRE limpa antes de carregar — garante que usuário novo começa zerado
+  marked   = {};
+  regExtra = [];
   try {
     const { data, error } = await window._sb
       .from('user_data').select('data')
       .eq('user_id', currentUser.id).single();
-    if (error && error.code !== 'PGRST116') return;
+    // PGRST116 = nenhum registro encontrado (usuário novo) — normal, começa zerado
+    if (error && error.code !== 'PGRST116') {
+      console.error('Load error:', error);
+      return;
+    }
     if (data && data.data) {
       marked   = data.data.marked   || {};
       regExtra = data.data.regExtra || [];
