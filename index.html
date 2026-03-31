@@ -338,8 +338,6 @@ tbody tr:hover{background:rgba(255,255,255,0.018);}
     <div class="today-badge" id="todayBadge"></div>
     <button onclick="signOut()" style="background:none;border:1px solid rgba(255,83,112,0.3);color:var(--red);border-radius:8px;padding:0.25rem 0.75rem;font-family:inherit;font-size:0.72rem;cursor:pointer;" onmouseover="this.style.background='var(--red3)'" onmouseout="this.style.background='none'">Sair →</button>
     <span id="saveIndicator" style="font-size:0.72rem;font-weight:600;min-width:80px;text-align:right;"></span>
-    <button onclick="exportBackup()" title="Exportar backup" style="background:none;border:1px solid rgba(0,224,138,0.3);color:var(--green);border-radius:8px;padding:0.25rem 0.75rem;font-family:inherit;font-size:0.72rem;cursor:pointer;" onmouseover="this.style.background='var(--green3)'" onmouseout="this.style.background='none'">💾 Backup</button>
-    <button onclick="triggerImport()" title="Restaurar backup" style="background:none;border:1px solid rgba(56,182,255,0.3);color:var(--blue);border-radius:8px;padding:0.25rem 0.75rem;font-family:inherit;font-size:0.72rem;cursor:pointer;" onmouseover="this.style.background='var(--blue3)'" onmouseout="this.style.background='none'">📂 Restaurar</button>
     <input type="file" id="importFile" accept=".json" style="display:none" onchange="importBackup(event)">
   </div>
 </header>
@@ -373,6 +371,15 @@ tbody tr:hover{background:rgba(255,255,255,0.018);}
   <div class="nav-item" onclick="goPage('registrar',this)">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
     Registrar Aula
+  </div>
+  <div class="nav-item" onclick="goPage('simulado',this)">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+    Registrar Simulado
+  </div>
+  <div class="nav-section">Sistema</div>
+  <div class="nav-item" onclick="goPage('config',this)">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    Configurações
   </div>
 </nav>
 
@@ -662,6 +669,106 @@ tbody tr:hover{background:rgba(255,255,255,0.018);}
   <canvas id="chartTemas" style="display:none" height="0"></canvas>
 </div>
 
+<!-- ═══ REGISTRAR SIMULADO ═══ -->
+<div class="page" id="page-simulado">
+  <div class="sec-hdr">
+    <div class="sec-title"><div class="sec-title-dot"></div> Registrar Simulado</div>
+  </div>
+  <div class="reg-layout">
+    <div>
+      <div class="form-card">
+        <h2>Novo Simulado</h2>
+        <div class="field">
+          <label>Nome / Banca</label>
+          <input type="text" id="simNome" placeholder="Ex: Revalida, ENARE, Famerp…" autocomplete="off">
+        </div>
+        <div class="field">
+          <label>Data</label>
+          <input type="date" id="simData">
+        </div>
+        <div class="field">
+          <label>Especialidade / Área</label>
+          <select id="simArea">
+            <option value="Geral">Geral (todas as áreas)</option>
+            <option value="Clínica Médica">Clínica Médica</option>
+            <option value="Cirurgia">Cirurgia</option>
+            <option value="Ginecologia e Obstetrícia">Ginecologia e Obstetrícia</option>
+            <option value="Pediatria">Pediatria</option>
+            <option value="Medicina Preventiva">Medicina Preventiva</option>
+          </select>
+        </div>
+        <div class="m-grid" style="margin-bottom:0.75rem">
+          <div class="m-field">
+            <label>Total Q</label>
+            <input type="number" id="simQ" min="0" placeholder="120" oninput="calcSimPct()">
+          </div>
+          <div class="m-field">
+            <label>Acertos ✓</label>
+            <input type="number" id="simA" min="0" placeholder="90" oninput="calcSimPct()">
+          </div>
+          <div class="m-field">
+            <label>Erros ✗</label>
+            <input type="number" id="simE" min="0" placeholder="30" oninput="calcSimFromE()">
+          </div>
+        </div>
+        <div class="m-pct" id="simPct" style="margin-bottom:1rem">— %</div>
+        <div class="field">
+          <label>Observações (opcional)</label>
+          <input type="text" id="simObs" placeholder="Ex: Nota de corte 70%, fiz em 3h…">
+        </div>
+        <button class="btn-add" onclick="addSimulado()">✓ Registrar Simulado</button>
+      </div>
+    </div>
+
+    <div class="preview-card">
+      <h3 style="font-size:0.85rem;font-weight:600;color:var(--muted);margin-bottom:1rem;">Histórico de Simulados</h3>
+      <div id="simListWrap">
+        <div style="color:var(--dim);font-size:0.82rem;text-align:center;padding:2rem">Nenhum simulado registrado ainda.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ CONFIGURAÇÕES ═══ -->
+<div class="page" id="page-config">
+  <div class="sec-hdr">
+    <div class="sec-title"><div class="sec-title-dot"></div> Configurações</div>
+  </div>
+
+  <!-- Conta -->
+  <div class="form-card" style="margin-bottom:1.25rem;">
+    <h2 style="margin-bottom:1.25rem;">👤 Conta</h2>
+    <div style="display:flex;align-items:center;gap:1rem;padding:1rem;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);margin-bottom:1rem;">
+      <div style="width:44px;height:44px;border-radius:50%;background:var(--green3);border:2px solid var(--green);display:flex;align-items:center;justify-content:center;font-size:1.2rem;">👨‍⚕️</div>
+      <div>
+        <div style="font-weight:600;font-size:0.95rem" id="configUserName">—</div>
+        <div style="font-size:0.78rem;color:var(--muted)" id="configUserEmail">—</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:0.75rem;flex-wrap:wrap;">
+      <button onclick="exportBackup()" style="display:flex;align-items:center;gap:8px;padding:0.65rem 1.2rem;background:var(--green3);border:1px solid rgba(0,224,138,0.35);border-radius:var(--r);color:var(--green);font-family:inherit;font-size:0.88rem;font-weight:600;cursor:pointer;transition:all 0.15s;" onmouseover="this.style.background='rgba(0,224,138,0.2)'" onmouseout="this.style.background='var(--green3)'">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        💾 Exportar Backup
+      </button>
+      <button onclick="triggerImport()" style="display:flex;align-items:center;gap:8px;padding:0.65rem 1.2rem;background:var(--blue3);border:1px solid rgba(56,182,255,0.35);border-radius:var(--r);color:var(--blue);font-family:inherit;font-size:0.88rem;font-weight:600;cursor:pointer;transition:all 0.15s;" onmouseover="this.style.background='rgba(56,182,255,0.2)'" onmouseout="this.style.background='var(--blue3)'">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        📂 Restaurar Backup
+      </button>
+      <button onclick="signOut()" style="display:flex;align-items:center;gap:8px;padding:0.65rem 1.2rem;background:var(--red3);border:1px solid rgba(255,83,112,0.35);border-radius:var(--r);color:var(--red);font-family:inherit;font-size:0.88rem;font-weight:600;cursor:pointer;transition:all 0.15s;" onmouseover="this.style.background='rgba(255,83,112,0.2)'" onmouseout="this.style.background='var(--red3)'">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Sair da Conta
+      </button>
+    </div>
+  </div>
+
+  <!-- Tema de cores -->
+  <div class="form-card">
+    <h2 style="margin-bottom:0.5rem;">🎨 Tema de Cores</h2>
+    <p style="font-size:0.8rem;color:var(--muted);margin-bottom:1.25rem;">Escolha a paleta de cores do aplicativo</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:0.75rem;" id="themeGrid"></div>
+  </div>
+</div>
+
 </div><!-- /content -->
 </div><!-- /shell -->
 
@@ -944,6 +1051,8 @@ function goPage(id, el) {
   if(id==='registrar') renderRegList();
   if(id==='foco') renderFoco();
   if(id==='analise') renderAnalise();
+  if(id==='simulado') renderSimulados();
+  if(id==='config') renderConfig();
 }
 
 function goDetail(nome) {
@@ -2110,6 +2219,197 @@ function exportCSV() {
 // ═══════════════════════════════════
 // INIT
 // ═══════════════════════════════════
+// ═══════════════════════════════════
+// SIMULADOS
+// ═══════════════════════════════════
+function calcSimPct() {
+  const q = parseInt(document.getElementById('simQ').value)||0;
+  const a = parseInt(document.getElementById('simA').value)||0;
+  const el = document.getElementById('simPct');
+  const eEl = document.getElementById('simE');
+  if(q>0 && a>=0) eEl.value = Math.max(0, q-a);
+  if(q>0){
+    const p = (a/q*100);
+    el.textContent = p.toFixed(1).replace('.',',') + '%';
+    if(p>=85) el.style.color='#00e08a';
+    else if(p>=80) el.style.color='#7be3b5';
+    else if(p>=75) el.style.color='#ffc947';
+    else el.style.color='#ff5370';
+  } else { el.textContent='— %'; el.style.color='var(--muted)'; }
+}
+
+function calcSimFromE() {
+  const q = parseInt(document.getElementById('simQ').value)||0;
+  const e = parseInt(document.getElementById('simE').value)||0;
+  const aEl = document.getElementById('simA');
+  if(q>0 && e>=0) aEl.value = Math.max(0, q-e);
+  calcSimPct();
+}
+
+function addSimulado() {
+  const nome  = document.getElementById('simNome').value.trim();
+  const data  = document.getElementById('simData').value;
+  const area  = document.getElementById('simArea').value;
+  const q     = parseInt(document.getElementById('simQ').value)||0;
+  const a     = parseInt(document.getElementById('simA').value)||0;
+  const e     = parseInt(document.getElementById('simE').value)||0;
+  const obs   = document.getElementById('simObs').value.trim();
+  const pctEl = document.getElementById('simPct').textContent;
+
+  if(!nome || !data || !q) { toast('Preencha nome, data e questões!', 'err'); return; }
+
+  if(!marked.__simulados) marked.__simulados = [];
+  marked.__simulados.push({
+    id: Date.now(),
+    nome, data, area, q, a, e,
+    pct: pctEl !== '— %' ? pctEl : '',
+    obs,
+    criadoEm: new Date().toISOString()
+  });
+  save();
+  toast(`✓ Simulado "${nome}" registrado!`, 'ok');
+
+  // Clear form
+  ['simNome','simQ','simA','simE','simObs'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('simPct').textContent = '— %';
+  document.getElementById('simPct').style.color = 'var(--muted)';
+  document.getElementById('simData').value = iso(TODAY);
+
+  renderSimulados();
+}
+
+function deleteSimulado(id) {
+  if(!confirm('Excluir este simulado?')) return;
+  marked.__simulados = (marked.__simulados || []).filter(s => s.id !== id);
+  save();
+  renderSimulados();
+  toast('Simulado excluído.', 'ok');
+}
+
+function renderSimulados() {
+  const sims = (marked.__simulados || []).slice().sort((a,b) => b.data.localeCompare(a.data));
+  const wrap = document.getElementById('simListWrap');
+  if (!wrap) return;
+
+  // Set today date on form
+  document.getElementById('simData').value = iso(TODAY);
+
+  if(!sims.length) {
+    wrap.innerHTML = '<div style="color:var(--dim);font-size:0.82rem;text-align:center;padding:2rem">Nenhum simulado registrado ainda.</div>';
+    return;
+  }
+
+  const AREA_COLORS = {
+    'Geral': 'var(--blue)', 'Clínica Médica': 'var(--green)',
+    'Cirurgia': 'var(--gold)', 'Ginecologia e Obstetrícia': '#e879f9',
+    'Pediatria': '#38bdf8', 'Medicina Preventiva': '#fb923c'
+  };
+
+  wrap.innerHTML = sims.map(s => {
+    const n = parseFloat((s.pct||'0').replace(',','.'));
+    let col;
+    if(n>=85) col='#00e08a'; else if(n>=80) col='#7be3b5';
+    else if(n>=75) col='#ffc947'; else col='#ff5370';
+    const areaCor = AREA_COLORS[s.area] || 'var(--muted)';
+    return `<div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:0.85rem 1rem;margin-bottom:0.6rem;display:flex;align-items:center;gap:1rem;">
+      <div style="flex:1;min-width:0;">
+        <div style="font-weight:600;font-size:0.9rem;margin-bottom:3px;">${s.nome}</div>
+        <div style="display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center;">
+          <span style="font-size:0.72rem;color:${areaCor};background:${areaCor}22;border:1px solid ${areaCor}44;border-radius:10px;padding:1px 8px;">${s.area}</span>
+          <span style="font-size:0.75rem;color:var(--muted)">${fmtBRY(s.data)}</span>
+          ${s.obs ? `<span style="font-size:0.72rem;color:var(--dim);font-style:italic">${s.obs}</span>` : ''}
+        </div>
+      </div>
+      <div style="text-align:center;min-width:80px;">
+        <div style="font-size:1.3rem;font-weight:800;color:${col};letter-spacing:-0.5px">${s.pct||'—'}</div>
+        <div style="font-size:0.7rem;color:var(--muted)">${s.q}Q · ${s.a}✓ · ${s.e}✗</div>
+      </div>
+      <button onclick="deleteSimulado(${s.id})" style="background:none;border:none;color:var(--dim);cursor:pointer;font-size:1rem;padding:4px;flex-shrink:0;" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--dim)'">✕</button>
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════
+// CONFIGURAÇÕES
+// ═══════════════════════════════════
+const THEMES = [
+  { id:'dark-blue',  name:'Azul Escuro',   desc:'Padrão',       bg:'#080f1a', bg2:'#0d1825', accent:'#38b6ff', green:'#00e08a' },
+  { id:'dark-green', name:'Verde Escuro',  desc:'Floresta',     bg:'#061410', bg2:'#0a1f1a', accent:'#34d399', green:'#10b981' },
+  { id:'dark-purple',name:'Roxo Escuro',   desc:'Galáxia',      bg:'#0d0a1a', bg2:'#150f2a', accent:'#a78bfa', green:'#8b5cf6' },
+  { id:'dark-red',   name:'Vermelho',      desc:'Fogo',         bg:'#120808', bg2:'#1e0f0f', accent:'#f87171', green:'#ef4444' },
+  { id:'dark-gold',  name:'Dourado',       desc:'Premium',      bg:'#0f0c05', bg2:'#1a1608', accent:'#fbbf24', green:'#f59e0b' },
+  { id:'dark-slate', name:'Cinza Escuro',  desc:'Neutro',       bg:'#0a0c10', bg2:'#111318', accent:'#94a3b8', green:'#64748b' },
+];
+
+function applyTheme(t) {
+  const r = document.documentElement.style;
+  r.setProperty('--bg',  t.bg);
+  r.setProperty('--bg2', t.bg2);
+  r.setProperty('--bg3', shadeColor(t.bg2, 10));
+  r.setProperty('--bg4', shadeColor(t.bg2, 20));
+  r.setProperty('--border',  shadeColor(t.bg2, 30));
+  r.setProperty('--border2', shadeColor(t.bg2, 45));
+  r.setProperty('--blue',  t.accent);
+  r.setProperty('--blue2', shadeColor(t.accent, -20));
+  r.setProperty('--blue3', t.accent + '1a');
+  r.setProperty('--green',  t.green);
+  r.setProperty('--green2', shadeColor(t.green, -15));
+  r.setProperty('--green3', t.green + '1a');
+  r.setProperty('--dim', shadeColor(t.bg2, 55));
+  r.setProperty('--muted', shadeColor(t.accent, -30) + 'cc');
+  localStorage.setItem('appTheme', t.id);
+  renderThemeGrid();
+}
+
+function shadeColor(hex, pct) {
+  // Lighten/darken a hex color by pct (-100 to +100)
+  hex = hex.replace('#','');
+  if(hex.length===3) hex=hex.split('').map(c=>c+c).join('');
+  const num = parseInt(hex,16);
+  const r = Math.min(255,Math.max(0,((num>>16)&0xff)+Math.round(255*pct/100)));
+  const g = Math.min(255,Math.max(0,((num>>8)&0xff)+Math.round(255*pct/100)));
+  const b = Math.min(255,Math.max(0,(num&0xff)+Math.round(255*pct/100)));
+  return '#'+[r,g,b].map(x=>x.toString(16).padStart(2,'0')).join('');
+}
+
+function renderThemeGrid() {
+  const grid = document.getElementById('themeGrid');
+  if (!grid) return;
+  const saved = localStorage.getItem('appTheme') || 'dark-blue';
+  grid.innerHTML = THEMES.map(t => {
+    const active = t.id === saved;
+    return `<div onclick="applyTheme(${JSON.stringify(t).replace(/"/g,'&quot;')})" style="cursor:pointer;border:2px solid ${active ? t.green : 'rgba(255,255,255,0.08)'};border-radius:10px;overflow:hidden;transition:all 0.2s;${active?'box-shadow:0 0 14px '+t.green+'55':''}" onmouseover="this.style.borderColor='${t.green}'" onmouseout="this.style.borderColor='${active ? t.green : 'rgba(255,255,255,0.08)'}'">
+      <div style="height:52px;background:linear-gradient(135deg,${t.bg} 0%,${t.bg2} 50%,${shadeColor(t.bg2,15)} 100%);display:flex;align-items:center;justify-content:center;gap:5px;">
+        <div style="width:12px;height:12px;border-radius:50%;background:${t.green};box-shadow:0 0 6px ${t.green}"></div>
+        <div style="width:8px;height:8px;border-radius:50%;background:${t.accent};opacity:0.7"></div>
+      </div>
+      <div style="padding:0.5rem 0.65rem;background:${t.bg2};">
+        <div style="font-size:0.78rem;font-weight:700;color:${t.green}">${t.name}</div>
+        <div style="font-size:0.68rem;color:rgba(255,255,255,0.35)">${t.desc}${active?' · ativo':''}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderConfig() {
+  if(currentUser) {
+    const name = currentUser.user_metadata?.full_name || currentUser.email.split('@')[0];
+    const el1 = document.getElementById('configUserName');
+    const el2 = document.getElementById('configUserEmail');
+    if(el1) el1.textContent = name;
+    if(el2) el2.textContent = currentUser.email;
+  }
+  renderThemeGrid();
+}
+
+function loadSavedTheme() {
+  const saved = localStorage.getItem('appTheme');
+  if(saved) {
+    const t = THEMES.find(x => x.id === saved);
+    if(t) applyTheme(t);
+  }
+}
+
 const MONTHS_PT = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 const DAYS_PT   = ['domingo','segunda','terça','quarta','quinta','sexta','sábado'];
 
@@ -2250,6 +2550,7 @@ async function startApp(user) {
   showLoadingOverlay(true);
   await loadFromSupabase();
   showLoadingOverlay(false);
+  loadSavedTheme();
   document.getElementById('todayBadge').textContent = `${DAYS_PT[TODAY.getDay()]}, ${TODAY.getDate()} de ${MONTHS_PT[TODAY.getMonth()]} de ${TODAY.getFullYear()}`;
   document.getElementById('regData').value = iso(TODAY);
   renderHome();
