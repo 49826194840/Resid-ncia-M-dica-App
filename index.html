@@ -935,11 +935,21 @@ function calcRevDates(studyISO){
 // ═══════════════════════════════════
 // DATA ACCESS
 // ═══════════════════════════════════
+function calcPctTema(tema) {
+  // Calculate pct_tema dynamically from all marks for this tema
+  const revs = REV_KEYS.map(k => marked[`${tema.conteudo}::${k}`]).filter(Boolean);
+  if (!revs.length) return tema.pct_tema || '';
+  const totalQ = revs.reduce((s,m) => s + (m.q||0), 0);
+  const totalA = revs.reduce((s,m) => s + (m.a||0), 0);
+  if (!totalQ) return tema.pct_tema || '';
+  return (totalA/totalQ*100).toFixed(2).replace('.',',') + '%';
+}
+
 function allTemas() {
   const deleted = (marked.__deletedTemas || []);
   return [
     ...BASE.map(r=>({...r, _src:'base'})).filter(r=>!deleted.includes(r.conteudo)),
-    ...regExtra.map(r=>({...r, _src:'new'}))
+    ...regExtra.map(r=>({...r, _src:'new', pct_tema: calcPctTema(r) || r.pct_tema}))
   ];
 }
 
@@ -1901,7 +1911,7 @@ function renderAnalise() {
     .sort((a,b)=>parseFloat(a.pct_tema.replace(',','.'))-parseFloat(b.pct_tema.replace(',','.')))
     .slice(0,10);
   document.getElementById('weakTemas').innerHTML = weak.map(t => {
-    const n = parseFloat(t.pct_tema.replace(',','.'));
+    const n = parseFloat((t.pct_tema||'0').replace(',','.'));
     let col;
     if(n>=85) col='#00e08a';
     else if(n>=80) col='#7be3b5';
@@ -1921,8 +1931,9 @@ function renderAnalise() {
   // % por Revisão table
   const revPercBody = document.getElementById('revPercBody');
   const pctKeys = ['pct_tema','pct_pa','pct_r1','pct_r2','pct_r3','pct_r4','pct_r5','pct_r6'];
-  const sortedForTable = [...temas].filter(t=>t.pct_tema)
-    .sort((a,b)=>parseFloat(b.pct_tema.replace(',','.'))-parseFloat(a.pct_tema.replace(',','.')));
+  const sortedForTable = [...temas]
+    .filter(t => t.pct_tema || getRevList(t).some(e=>e.mk))
+    .sort((a,b)=>parseFloat((b.pct_tema||'0').replace(',','.'))-parseFloat((a.pct_tema||'0').replace(',','.')));
 
   // revPercBody column headers corrected
   function pctCell(v) {
@@ -1937,7 +1948,7 @@ function renderAnalise() {
   }
 
   revPercBody.innerHTML = sortedForTable.map((t,i)=>{
-    const n = parseFloat(t.pct_tema.replace(',','.'));
+    const n = parseFloat((t.pct_tema||'0').replace(',','.'));
     let geralCol;
     if(n>=85) geralCol='#00e08a';
     else if(n>=80) geralCol='#7be3b5';
@@ -1956,11 +1967,17 @@ function renderAnalise() {
     </tr>`;
   }).join('');
 
-  // Full table
-  const sorted2 = [...temas].filter(t=>t.pct_tema)
-    .sort((a,b)=>parseFloat(b.pct_tema.replace(',','.'))-parseFloat(a.pct_tema.replace(',','.')));
+  // Full table — inclui todos os temas que têm pelo menos 1 marcação
+  const sorted2 = [...temas]
+    .filter(t => t.pct_tema || getRevList(t).some(e=>e.mk))
+    .sort((a,b) => {
+      const na = parseFloat((a.pct_tema||'0').replace(',','.'));
+      const nb = parseFloat((b.pct_tema||'0').replace(',','.'));
+      return nb - na;
+    });
   document.getElementById('analiseBody').innerHTML = sorted2.map((t,i)=>{
-    const n = parseFloat(t.pct_tema.replace(',','.'));
+    const pctStr = t.pct_tema || '0,00%';
+    const n = parseFloat(pctStr.replace(',','.'));
     let col;
     if(n>=85) col='#00e08a';
     else if(n>=80) col='#7be3b5';
@@ -1987,7 +2004,7 @@ function renderAnalise() {
       <td><span class="subj-name" onclick='goDetail(${JSON.stringify(t.conteudo)})'>${t.conteudo}</span></td>
       <td><div style="display:flex;align-items:center;gap:6px">
         <div style="width:50px;height:5px;background:var(--bg4);border-radius:3px;overflow:hidden"><div style="height:100%;width:${n}%;background:${col}"></div></div>
-        <span style="font-weight:700;color:${col}">${t.pct_tema}</span>
+        <span style="font-weight:700;color:${col}">${t.pct_tema || '—'}</span>
       </div></td>
       <td style="text-align:center;color:var(--muted)">${tQ||'—'}</td>
       <td style="text-align:center;color:var(--green)">${tA||'—'}</td>
