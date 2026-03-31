@@ -596,20 +596,21 @@ tbody tr:hover{background:rgba(255,255,255,0.018);}
   <!-- KPI row -->
   <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem;font-size:1rem;" id="analiseKpis"></div>
 
-  <!-- RETENÇÃO POR REVISÃO -->
+  <!-- 1. Desempenho por Tema (aberto por padrão) -->
   <div class="tbl-wrap" style="margin-bottom:1rem;">
-    <div onclick="toggleSection('retencaoSection','retencaoChevron')" style="padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;" onmouseover="this.style.background='rgba(255,255,255,0.02)'" onmouseout="this.style.background=''">
-      <div style="font-size:1rem;font-weight:700;color:var(--text);">📈 % de Retenção por Revisão</div>
-      <span id="retencaoChevron" style="color:var(--muted);font-size:1.1rem;transition:transform 0.2s;">▾</span>
+    <div onclick="toggleSection('analiseBodySection','analiseChevron')" style="padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;" onmouseover="this.style.background='rgba(255,255,255,0.02)'" onmouseout="this.style.background=''">
+      <div style="font-size:1rem;font-weight:700;color:var(--text);">🏆 Desempenho por Tema</div>
+      <span id="analiseChevron" style="color:var(--muted);font-size:1.1rem;transition:transform 0.2s;">▾</span>
     </div>
-    <div id="retencaoSection" style="padding:1.25rem;border-top:1px solid var(--border);">
-      <div style="font-size:0.82rem;color:var(--muted);margin-bottom:1.25rem;">Média de acertos de todos os temas em cada etapa de revisão (soma dos acertos ÷ total de questões)</div>
-      <div id="retencaoChart" style="display:flex;align-items:flex-end;gap:10px;height:150px;"></div>
-      <div id="retencaoLbls" style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap;"></div>
+    <div id="analiseBodySection" style="border-top:1px solid var(--border);overflow-x:auto;">
+      <table style="min-width:600px;">
+        <thead><tr><th>#</th><th>Tema</th><th>% Geral</th><th>Total Q</th><th>Acertos</th><th>Erros</th><th>Revisões Feitas</th><th>Tendência</th></tr></thead>
+        <tbody id="analiseBody"></tbody>
+      </table>
     </div>
   </div>
 
-  <!-- % por Revisão por Tema (collapsible) -->
+  <!-- 2. % de Acertos por Revisão — Todos os Temas (fechado) -->
   <div class="tbl-wrap" style="margin-bottom:1rem;">
     <div onclick="toggleSection('revPercSection','revPercChevron')" style="padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;" onmouseover="this.style.background='rgba(255,255,255,0.02)'" onmouseout="this.style.background=''">
       <div style="font-size:1rem;font-weight:700;color:var(--text);">📊 % de Acertos por Revisão — Todos os Temas</div>
@@ -633,10 +634,10 @@ tbody tr:hover{background:rgba(255,255,255,0.018);}
     </div>
   </div>
 
-  <!-- Temas com Menor % (collapsible) -->
+  <!-- 3. Temas com Menor % (fechado, letras brancas) -->
   <div class="tbl-wrap" style="margin-bottom:1rem;">
     <div onclick="toggleSection('weakSection','weakChevron')" style="padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;" onmouseover="this.style.background='rgba(255,255,255,0.02)'" onmouseout="this.style.background=''">
-      <div style="font-size:1rem;font-weight:700;color:var(--red);">⚠️ Temas com Menor % Geral</div>
+      <div style="font-size:1rem;font-weight:700;color:#ffffff;">⚠️ Temas com Menor % Geral</div>
       <span id="weakChevron" style="color:var(--muted);font-size:1.1rem;transition:transform 0.2s;">▸</span>
     </div>
     <div id="weakSection" style="display:none;padding:1.25rem;border-top:1px solid var(--border);">
@@ -644,17 +645,16 @@ tbody tr:hover{background:rgba(255,255,255,0.018);}
     </div>
   </div>
 
-  <!-- Desempenho por Tema (collapsible) -->
+  <!-- 4. % de Retenção por Revisão (fechado) -->
   <div class="tbl-wrap" style="margin-bottom:1rem;">
-    <div onclick="toggleSection('analiseBodySection','analiseChevron')" style="padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;" onmouseover="this.style.background='rgba(255,255,255,0.02)'" onmouseout="this.style.background=''">
-      <div style="font-size:1rem;font-weight:700;color:var(--text);">🏆 Desempenho por Tema</div>
-      <span id="analiseChevron" style="color:var(--muted);font-size:1.1rem;transition:transform 0.2s;">▸</span>
+    <div onclick="toggleSection('retencaoSection','retencaoChevron')" style="padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;" onmouseover="this.style.background='rgba(255,255,255,0.02)'" onmouseout="this.style.background=''">
+      <div style="font-size:1rem;font-weight:700;color:var(--text);">📈 % de Retenção por Revisão</div>
+      <span id="retencaoChevron" style="color:var(--muted);font-size:1.1rem;transition:transform 0.2s;">▸</span>
     </div>
-    <div id="analiseBodySection" style="display:none;border-top:1px solid var(--border);overflow-x:auto;">
-      <table style="min-width:600px;">
-        <thead><tr><th>#</th><th>Tema</th><th>% Geral</th><th>Total Q</th><th>Acertos</th><th>Erros</th><th>Revisões Feitas</th><th>Tendência</th></tr></thead>
-        <tbody id="analiseBody"></tbody>
-      </table>
+    <div id="retencaoSection" style="display:none;padding:1.25rem;border-top:1px solid var(--border);">
+      <div style="font-size:0.82rem;color:var(--muted);margin-bottom:1.25rem;">Média de acertos de todos os temas em cada etapa de revisão (soma dos acertos ÷ total de questões)</div>
+      <div id="retencaoChart" style="display:flex;align-items:flex-end;gap:10px;height:150px;"></div>
+      <div id="retencaoLbls" style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap;"></div>
     </div>
   </div>
 
@@ -715,7 +715,7 @@ tbody tr:hover{background:rgba(255,255,255,0.018);}
       <div class="m-grid">
         <div class="m-field"><label>Total Q</label><input type="number" id="mQ" min="0" placeholder="30" oninput="calcPct()"></div>
         <div class="m-field"><label>Acertos ✓</label><input type="number" id="mA" min="0" placeholder="24" oninput="calcPct()"></div>
-        <div class="m-field"><label>Erros ✗</label><input type="number" id="mE" min="0" placeholder="6" oninput="calcPct()"></div>
+        <div class="m-field"><label>Erros ✗</label><input type="number" id="mE" min="0" placeholder="6" oninput="calcFromE()"></div>
       </div>
       <div class="m-pct" id="mPct">— %</div>
       <div class="m-btns">
@@ -1294,17 +1294,34 @@ function calcPct() {
   const q = parseInt(document.getElementById('mQ').value)||0;
   const a = parseInt(document.getElementById('mA').value)||0;
   const el = document.getElementById('mPct');
+  // Always auto-calc errors = Q - A
+  const eEl = document.getElementById('mE');
+  if(q>0 && a>=0) {
+    eEl.value = Math.max(0, q - a);
+  }
   if(q>0){
     const p = (a/q*100);
     el.textContent = p.toFixed(1).replace('.',',') + '%';
-    el.style.color = p>=75?'var(--green)':p>=60?'var(--gold)':'var(--red)';
-    // auto-fill errors
-    const eEl = document.getElementById('mE');
-    if(!eEl.value) eEl.value = Math.max(0,q-a);
+    // New color scale
+    if(p>=85) el.style.color='#00e08a';
+    else if(p>=80) el.style.color='#7be3b5';
+    else if(p>=75) el.style.color='#ffc947';
+    else el.style.color='#ff5370';
   } else {
     el.textContent='— %';
     el.style.color='var(--muted)';
   }
+}
+
+function calcFromE() {
+  // If user types errors manually, recalc acertos
+  const q = parseInt(document.getElementById('mQ').value)||0;
+  const e = parseInt(document.getElementById('mE').value)||0;
+  const aEl = document.getElementById('mA');
+  if(q>0 && e>=0) {
+    aEl.value = Math.max(0, q - e);
+  }
+  calcPct();
 }
 
 function confirmMark() {
