@@ -337,6 +337,7 @@ tbody tr:hover{background:rgba(255,255,255,0.018);}
     </div>
     <div class="today-badge" id="todayBadge"></div>
     <button onclick="signOut()" style="background:none;border:1px solid rgba(255,83,112,0.3);color:var(--red);border-radius:8px;padding:0.25rem 0.75rem;font-family:inherit;font-size:0.72rem;cursor:pointer;" onmouseover="this.style.background='var(--red3)'" onmouseout="this.style.background='none'">Sair →</button>
+    <span id="saveIndicator" style="font-size:0.72rem;font-weight:600;min-width:80px;text-align:right;"></span>
     <button onclick="exportBackup()" title="Exportar backup" style="background:none;border:1px solid rgba(0,224,138,0.3);color:var(--green);border-radius:8px;padding:0.25rem 0.75rem;font-family:inherit;font-size:0.72rem;cursor:pointer;" onmouseover="this.style.background='var(--green3)'" onmouseout="this.style.background='none'">💾 Backup</button>
     <button onclick="triggerImport()" title="Restaurar backup" style="background:none;border:1px solid rgba(56,182,255,0.3);color:var(--blue);border-radius:8px;padding:0.25rem 0.75rem;font-family:inherit;font-size:0.72rem;cursor:pointer;" onmouseover="this.style.background='var(--blue3)'" onmouseout="this.style.background='none'">📂 Restaurar</button>
     <input type="file" id="importFile" accept=".json" style="display:none" onchange="importBackup(event)">
@@ -770,18 +771,30 @@ async function loadFromSupabase() {
 
 async function _doSave() {
   if (!currentUser) return;
+  // Show saving indicator
+  const ind = document.getElementById('saveIndicator');
+  if (ind) { ind.textContent = '💾 salvando...'; ind.style.color = 'var(--muted)'; }
   try {
-    await window._sb.from('user_data').upsert({
+    const { error } = await window._sb.from('user_data').upsert({
       user_id: currentUser.id,
       data: { marked, regExtra },
       updated_at: new Date().toISOString()
     }, { onConflict: 'user_id' });
-  } catch(e) { console.error('Save error:', e); }
+    if (error) {
+      console.error('Save error:', error);
+      if (ind) { ind.textContent = '⚠ erro ao salvar'; ind.style.color = 'var(--red)'; }
+    } else {
+      if (ind) { ind.textContent = '✓ salvo'; ind.style.color = 'var(--green)'; setTimeout(()=>{ ind.textContent=''; }, 2000); }
+    }
+  } catch(e) {
+    console.error('Save error:', e);
+    if (ind) { ind.textContent = '⚠ erro ao salvar'; ind.style.color = 'var(--red)'; }
+  }
 }
 
+// save() agora salva IMEDIATAMENTE — sem delay
 function save() {
-  clearTimeout(_saveTimer);
-  _saveTimer = setTimeout(_doSave, 800);
+  _doSave();
 }
 
 // ═══════════════════════════════════
