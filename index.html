@@ -1131,7 +1131,7 @@ function renderHome() {
       : '<span style="color:var(--dim);font-size:0.71rem">Em dia</span>';
     return `<tr>
       <td class="rnum">${i+1}</td>
-      <td><span class="subj-name" onclick='goDetail(${JSON.stringify(t.conteudo)})'>${t.conteudo}</span>${t._src==='new'?'<span style="font-size:0.6rem;background:var(--gold3);color:var(--gold);border:1px solid rgba(255,201,71,0.3);border-radius:3px;padding:0 4px;margin-left:5px;font-weight:700">NOVO</span>':''} <button onclick='openEditModal(${JSON.stringify(t.conteudo)})' title="Editar nome" style="background:none;border:none;color:var(--dim);cursor:pointer;font-size:0.8rem;padding:0 3px;vertical-align:middle;opacity:0.6;" onmouseover="this.style.opacity='1';this.style.color='var(--green)'" onmouseout="this.style.opacity='0.6';this.style.color='var(--dim)'">✏️</button></td>
+      <td><span class="subj-name" onclick='goDetail(${JSON.stringify(t.conteudo)})'>${t.conteudo}</span> <button onclick='openEditModal(${JSON.stringify(t.conteudo)})' title="Editar nome" style="background:none;border:none;color:var(--dim);cursor:pointer;font-size:0.8rem;padding:0 3px;vertical-align:middle;opacity:0.6;" onmouseover="this.style.opacity='1';this.style.color='var(--green)'" onmouseout="this.style.opacity='0.6';this.style.color='var(--dim)'">✏️</button></td>
       <td style="color:var(--muted);font-size:0.78rem">${fmtBR(t.data)}</td>
       <td style="font-size:0.8rem;color:${s==='hoje'?'var(--blue)':s==='atrasado'?'var(--red)':'var(--muted)'}">${nextStr}</td>
       <td>${dotProgress(t)}</td>
