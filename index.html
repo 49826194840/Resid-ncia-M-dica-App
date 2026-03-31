@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ResidênciaApp</title>
+<title>ResidênciaApp — Matheus</title>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -1255,25 +1255,16 @@ function renderDetail(nome) {
   document.getElementById('det-total-e').textContent = totalE || '—';
 
   // Evolution bars
-  const allRevData = [
-    {label:'Pós Aula', pct: tema.pct_pa},
-    {label:'2ª Rev.', pct: tema.pct_r1},
-    {label:'R2', pct: tema.pct_r2},
-    {label:'R3', pct: tema.pct_r3},
-    {label:'R4', pct: tema.pct_r4},
-    {label:'R5', pct: tema.pct_r5},
-    {label:'R6', pct: tema.pct_r6},
-  ].filter(d=>d.pct);
+  const   // Build bars from marks (primary) or pct fields (fallback)
+  const rlm = {R1:'Pós Aula',R2:'2ª Rev.',R3:'3ª Rev.',R4:'4ª Rev.',R5:'5ª Rev.',R6:'6ª Rev.',R7:'7ª Rev.'};
+  const fbp = {R1:tema.pct_pa, R2:tema.pct_r1, R3:tema.pct_r2, R4:tema.pct_r3, R5:tema.pct_r4, R6:tema.pct_r5, R7:tema.pct_r6};
+  const allRevData = REV_KEYS.map(k => {
+    const mk = marked[`${tema.conteudo}::${k}`];
+    const pct = (mk && mk.pct) ? mk.pct : (fbp[k] || '');
+    return pct ? {label: rlm[k], pct, key: k} : null;
+  }).filter(Boolean);
 
-  // Also include manual marks
-  revs.forEach(e=>{
-    if(e.mk && !e.mk.fromBase && e.mk.pct) {
-      const exists = allRevData.find(d=>d.label===e.key);
-      if(!exists) allRevData.push({label:e.key, pct:e.mk.pct});
-    }
-  });
-
-  const barsEl = document.getElementById('evoBars');
+    const barsEl = document.getElementById('evoBars');
   const lblsEl = document.getElementById('evoLbls');
   if(!allRevData.length) {
     barsEl.innerHTML='<div style="color:var(--dim);font-size:0.8rem;text-align:center;width:100%">Sem dados de questões ainda</div>';
@@ -1963,16 +1954,24 @@ function renderAnalise() {
     else if(n>=80) geralCol='#7be3b5';
     else if(n>=75) geralCol='#ffc947';
     else geralCol='#ff5370';
+
+    // Read pct from marks (R1=PósAula, R2=2ªRev, ...) falling back to pct_pa/r1/r2 fields
+    const getMkPct = (rKey, fallback) => {
+      const mk = marked[`${t.conteudo}::${rKey}`];
+      if (mk && mk.pct) return mk.pct;
+      return fallback || '';
+    };
+
     return `<tr>
       <td style="font-size:0.88rem;font-weight:500;cursor:pointer;color:var(--text)" onclick='goDetail(${JSON.stringify(t.conteudo)})'>${t.conteudo}</td>
-      <td style="text-align:center;font-weight:800;color:${geralCol};font-size:0.9rem">${t.pct_tema}</td>
-      ${pctCell(t.pct_pa)}
-      ${pctCell(t.pct_r1)}
-      ${pctCell(t.pct_r2)}
-      ${pctCell(t.pct_r3)}
-      ${pctCell(t.pct_r4)}
-      ${pctCell(t.pct_r5||'')}
-      ${pctCell(t.pct_r6||'')}
+      <td style="text-align:center;font-weight:800;color:${geralCol};font-size:0.9rem">${t.pct_tema||'—'}</td>
+      ${pctCell(getMkPct('R1', t.pct_pa))}
+      ${pctCell(getMkPct('R2', t.pct_r1))}
+      ${pctCell(getMkPct('R3', t.pct_r2))}
+      ${pctCell(getMkPct('R4', t.pct_r3))}
+      ${pctCell(getMkPct('R5', t.pct_r4))}
+      ${pctCell(getMkPct('R6', t.pct_r5||''))}
+      ${pctCell(getMkPct('R7', t.pct_r6||''))}
     </tr>`;
   }).join('');
 
