@@ -2118,14 +2118,37 @@ async function importBackup(event) {
     const backup = JSON.parse(text);
     if (!backup.marked) { toast('Arquivo inválido!', 'err'); return; }
     if (!confirm(`Restaurar backup de ${backup.exportedAt?.slice(0,10) || '?'}?\n\nIsso VAI SUBSTITUIR seus dados atuais.`)) return;
+
+    if (!currentUser) { toast('Faça login primeiro!', 'err'); return; }
+
     marked   = backup.marked   || {};
     regExtra = backup.regExtra || [];
-    await _doSave();
-    toast('✓ Backup restaurado com sucesso!', 'ok');
+
+    // Show saving indicator
+    toast('Salvando no servidor...', 'ok');
+
+    // Force save and wait for confirmation
+    clearTimeout(_saveTimer);
+    const { error } = await window._sb.from('user_data').upsert({
+      user_id: currentUser.id,
+      data: { marked, regExtra },
+      updated_at: new Date().toISOString()
+    }, { onConflict: 'user_id' });
+
+    if (error) {
+      toast('Erro ao salvar: ' + error.message, 'err');
+      console.error('Save error:', error);
+      return;
+    }
+
+    toast('✓ Backup restaurado e salvo com sucesso!', 'ok');
     renderHome();
     renderStreak();
+    renderFoco();
+
   } catch(e) {
     toast('Erro ao importar: ' + e.message, 'err');
+    console.error(e);
   }
   event.target.value = '';
 }
