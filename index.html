@@ -337,6 +337,9 @@ tbody tr:hover{background:rgba(255,255,255,0.018);}
     </div>
     <div class="today-badge" id="todayBadge"></div>
     <button onclick="signOut()" style="background:none;border:1px solid rgba(255,83,112,0.3);color:var(--red);border-radius:8px;padding:0.25rem 0.75rem;font-family:inherit;font-size:0.72rem;cursor:pointer;" onmouseover="this.style.background='var(--red3)'" onmouseout="this.style.background='none'">Sair →</button>
+    <button onclick="exportBackup()" title="Exportar backup" style="background:none;border:1px solid rgba(0,224,138,0.3);color:var(--green);border-radius:8px;padding:0.25rem 0.75rem;font-family:inherit;font-size:0.72rem;cursor:pointer;" onmouseover="this.style.background='var(--green3)'" onmouseout="this.style.background='none'">💾 Backup</button>
+    <button onclick="triggerImport()" title="Restaurar backup" style="background:none;border:1px solid rgba(56,182,255,0.3);color:var(--blue);border-radius:8px;padding:0.25rem 0.75rem;font-family:inherit;font-size:0.72rem;cursor:pointer;" onmouseover="this.style.background='var(--blue3)'" onmouseout="this.style.background='none'">📂 Restaurar</button>
+    <input type="file" id="importFile" accept=".json" style="display:none" onchange="importBackup(event)">
   </div>
 </header>
 
@@ -1299,7 +1302,8 @@ function confirmMark() {
   const e = parseInt(document.getElementById('mE').value)||0;
   const pct = q>0 ? (a/q*100).toFixed(2).replace('.',',')+'%' : '';
   marked[`${nome}::${key}`] = { q, a, e, pct, date: todayISO(), fromBase:false };
-  save();
+  save();          // debounced for minor changes
+  _doSave();       // immediate save on revision mark (critical data)
   closeModal();
   toast(`✓ ${key} de "${nome}" marcada!`, 'ok');
   renderStreak();
@@ -2085,6 +2089,47 @@ async function signOut() {
   location.reload();
 }
 
+function exportBackup() {
+  if (!currentUser) { toast('Faça login primeiro!', 'err'); return; }
+  const backup = {
+    version: 2,
+    exportedAt: new Date().toISOString(),
+    userEmail: currentUser.email,
+    marked,
+    regExtra
+  };
+  const blob = new Blob([JSON.stringify(backup, null, 2)], {type: 'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `residencia_backup_${iso(TODAY)}.json`;
+  a.click();
+  toast('✓ Backup exportado!', 'ok');
+}
+
+function triggerImport() {
+  document.getElementById('importFile').click();
+}
+
+async function importBackup(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  try {
+    const text = await file.text();
+    const backup = JSON.parse(text);
+    if (!backup.marked) { toast('Arquivo inválido!', 'err'); return; }
+    if (!confirm(`Restaurar backup de ${backup.exportedAt?.slice(0,10) || '?'}?\n\nIsso VAI SUBSTITUIR seus dados atuais.`)) return;
+    marked   = backup.marked   || {};
+    regExtra = backup.regExtra || [];
+    await _doSave();
+    toast('✓ Backup restaurado com sucesso!', 'ok');
+    renderHome();
+    renderStreak();
+  } catch(e) {
+    toast('Erro ao importar: ' + e.message, 'err');
+  }
+  event.target.value = '';
+}
+
 async function initAuth() {
   const { data: { session } } = await window._sb.auth.getSession();
   if (session) {
@@ -2182,6 +2227,15 @@ document.addEventListener('visibilitychange', () => {
   if (!document.hidden && currentUser) {
     showLoadingOverlay(false);
   }
+  // Save when user leaves the tab
+  if (document.hidden && currentUser) {
+    _doSave();
+  }
+});
+
+// Save before page closes
+window.addEventListener('beforeunload', () => {
+  if (currentUser) _doSave();
 });
 
 initAuth();
