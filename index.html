@@ -2697,17 +2697,8 @@ function showLoadingOverlay(v) {
   if (!el) return;
   if (v) {
     el.style.display = 'flex';
-    // Safety net: nunca fica mais de 3 segundos carregando
     clearTimeout(window._loadTimeout);
-    window._loadTimeout = setTimeout(() => {
-      el.style.display = 'none';
-    }, 3000);
-  } else {
-    clearTimeout(window._loadTimeout);
-    el.style.display = 'none';
-  }
-}one';
-    }, 5000);
+    window._loadTimeout = setTimeout(() => { el.style.display = 'none'; }, 3000);
   } else {
     clearTimeout(window._loadTimeout);
     el.style.display = 'none';
