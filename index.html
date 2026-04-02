@@ -2549,18 +2549,32 @@ function renderSimulados() {
 // ═══════════════════════════════════
 // ── PALETAS DE CORES ──
 const BG_COLORS = [
-  { name:'Preto',        hex:'#0a0a0a', bg2:'#111111' },
-  { name:'Grafite',      hex:'#111318', bg2:'#1a1d24' },
-  { name:'Marinho',      hex:'#080f1a', bg2:'#0d1825' },
-  { name:'Azul Escuro',  hex:'#070d1f', bg2:'#0c1530' },
-  { name:'Verde Escuro', hex:'#061410', bg2:'#0a1f1a' },
-  { name:'Roxo Escuro',  hex:'#0d0a1a', bg2:'#150f2a' },
-  { name:'Vinho',        hex:'#120808', bg2:'#1e0f0f' },
-  { name:'Cacau',        hex:'#100c06', bg2:'#1a1408' },
-  { name:'Teal Escuro',  hex:'#041418', bg2:'#072028' },
-  { name:'Rosa Escuro',  hex:'#140810', bg2:'#1f0f1a' },
-  { name:'Chumbo',       hex:'#0a0c10', bg2:'#121520' },
-  { name:'Musgo',        hex:'#090f08', bg2:'#111a10' },
+  // ── Escuros ──
+  { name:'Preto',           hex:'#0a0a0a', bg2:'#111111',  dark:true  },
+  { name:'Grafite',         hex:'#111318', bg2:'#1a1d24',  dark:true  },
+  { name:'Marinho',         hex:'#080f1a', bg2:'#0d1825',  dark:true  },
+  { name:'Azul Escuro',     hex:'#070d1f', bg2:'#0c1530',  dark:true  },
+  { name:'Verde Escuro',    hex:'#061410', bg2:'#0a1f1a',  dark:true  },
+  { name:'Roxo Escuro',     hex:'#0d0a1a', bg2:'#150f2a',  dark:true  },
+  { name:'Vinho',           hex:'#120808', bg2:'#1e0f0f',  dark:true  },
+  { name:'Cacau',           hex:'#100c06', bg2:'#1a1408',  dark:true  },
+  { name:'Teal Escuro',     hex:'#041418', bg2:'#072028',  dark:true  },
+  { name:'Rosa Escuro',     hex:'#140810', bg2:'#1f0f1a',  dark:true  },
+  { name:'Chumbo',          hex:'#0a0c10', bg2:'#121520',  dark:true  },
+  { name:'Musgo',           hex:'#090f08', bg2:'#111a10',  dark:true  },
+  // ── Claros ──
+  { name:'Branco',          hex:'#ffffff', bg2:'#f1f5f9',  dark:false },
+  { name:'Gelo',            hex:'#f8fafc', bg2:'#e2e8f0',  dark:false },
+  { name:'Azul Claro',      hex:'#eff6ff', bg2:'#dbeafe',  dark:false },
+  { name:'Verde Claro',     hex:'#f0fdf4', bg2:'#dcfce7',  dark:false },
+  { name:'Lavanda',         hex:'#f5f3ff', bg2:'#ede9fe',  dark:false },
+  { name:'Rosa Claro',      hex:'#fff1f2', bg2:'#ffe4e6',  dark:false },
+  { name:'Âmbar Claro',     hex:'#fffbeb', bg2:'#fef3c7',  dark:false },
+  { name:'Ciano Claro',     hex:'#ecfeff', bg2:'#cffafe',  dark:false },
+  { name:'Cinza Claro',     hex:'#f9fafb', bg2:'#e5e7eb',  dark:false },
+  { name:'Pêssego',         hex:'#fff7ed', bg2:'#ffedd5',  dark:false },
+  { name:'Menta',           hex:'#f0fdfa', bg2:'#ccfbf1',  dark:false },
+  { name:'Lilás',           hex:'#fdf4ff', bg2:'#fae8ff',  dark:false },
 ];
 
 const ACCENT_COLORS = [
@@ -2587,22 +2601,40 @@ const THEMES = [];
 function applyCustomColors(bgCol, accentCol, save=true) {
   const bg = bgCol || _selectedBg;
   const ac = accentCol || _selectedAccent;
+  const isLight = bg.dark === false;
   const r = document.documentElement.style;
-  r.setProperty('--bg',      bg.hex);
-  r.setProperty('--bg2',     bg.bg2);
-  r.setProperty('--bg3',     shadeColor(bg.bg2, 10));
-  r.setProperty('--bg4',     shadeColor(bg.bg2, 20));
-  r.setProperty('--border',  shadeColor(bg.bg2, 30));
-  r.setProperty('--border2', shadeColor(bg.bg2, 45));
-  r.setProperty('--blue',    ac.hex);
-  r.setProperty('--blue2',   shadeColor(ac.hex, -20));
-  r.setProperty('--blue3',   ac.hex + '22');
-  r.setProperty('--green',   ac.hex);
-  r.setProperty('--green2',  shadeColor(ac.hex, -15));
-  r.setProperty('--green3',  ac.hex + '1a');
-  r.setProperty('--dim',     shadeColor(bg.bg2, 55));
-  r.setProperty('--muted',   shadeColor(ac.hex, -30) + 'cc');
-  r.setProperty('--text',    '#ddeeff');
+
+  if (isLight) {
+    // Tema claro — inverte as lógicas de cor
+    r.setProperty('--bg',      bg.hex);
+    r.setProperty('--bg2',     bg.bg2);
+    r.setProperty('--bg3',     shadeColor(bg.bg2, -8));
+    r.setProperty('--bg4',     shadeColor(bg.bg2, -15));
+    r.setProperty('--border',  shadeColor(bg.bg2, -20));
+    r.setProperty('--border2', shadeColor(bg.bg2, -35));
+    r.setProperty('--text',    '#0f172a');
+    r.setProperty('--muted',   '#64748b');
+    r.setProperty('--dim',     '#94a3b8');
+  } else {
+    // Tema escuro
+    r.setProperty('--bg',      bg.hex);
+    r.setProperty('--bg2',     bg.bg2);
+    r.setProperty('--bg3',     shadeColor(bg.bg2, 10));
+    r.setProperty('--bg4',     shadeColor(bg.bg2, 20));
+    r.setProperty('--border',  shadeColor(bg.bg2, 30));
+    r.setProperty('--border2', shadeColor(bg.bg2, 45));
+    r.setProperty('--text',    '#ddeeff');
+    r.setProperty('--dim',     shadeColor(bg.bg2, 55));
+    r.setProperty('--muted',   shadeColor(ac.hex, -30) + 'cc');
+  }
+
+  r.setProperty('--blue',   ac.hex);
+  r.setProperty('--blue2',  shadeColor(ac.hex, -20));
+  r.setProperty('--blue3',  ac.hex + '22');
+  r.setProperty('--green',  ac.hex);
+  r.setProperty('--green2', shadeColor(ac.hex, -15));
+  r.setProperty('--green3', ac.hex + '1a');
+
   if(save) {
     localStorage.setItem('customBg',     JSON.stringify(bg));
     localStorage.setItem('customAccent', JSON.stringify(ac));
@@ -2616,16 +2648,26 @@ function applyTheme(t) { applyCustomColors(); }
 function applyTableRows() {}
 
 function updatePreviewColors(bg, ac) {
-  const pb = document.getElementById('prevTopbar');
-  const pd = document.getElementById('prevDot');
-  const pn = document.getElementById('prevNum');
+  const pb  = document.getElementById('prevTopbar');
+  const pd  = document.getElementById('prevDot');
+  const pn  = document.getElementById('prevNum');
   const pc1 = document.getElementById('prevCard1');
   const pb2 = document.getElementById('prevBody');
-  if(pb)  pb.style.background = bg.bg2;
-  if(pb2) pb2.style.background = bg.hex;
+  const pt  = document.getElementById('prevTitle2');
+  const isLight = bg.dark === false;
+  const textCol = isLight ? '#0f172a' : '#ddeeff';
+  const mutedCol = isLight ? '#64748b' : 'rgba(255,255,255,0.4)';
+  if(pb)  { pb.style.background = bg.bg2; pb.style.borderBottom = '1px solid '+(isLight?'#cbd5e1':'rgba(255,255,255,0.1)'); }
+  if(pb2) { pb2.style.background = bg.hex; }
   if(pd)  { pd.style.background = ac.hex; pd.style.boxShadow = '0 0 6px '+ac.hex; }
-  if(pn)  pn.style.color = ac.hex;
-  if(pc1) { pc1.style.background = ac.hex+'18'; pc1.style.borderColor = ac.hex+'44'; }
+  if(pt)  { pt.style.color = ac.hex; }
+  if(pn)  { pn.style.color = ac.hex; }
+  if(pc1) { pc1.style.background = ac.hex+'18'; pc1.style.borderColor = ac.hex+'44'; pc1.style.color = textCol; }
+  // Update text colors on preview
+  const prevBody = document.getElementById('prevBody');
+  if(prevBody) prevBody.querySelectorAll('div').forEach(d => {
+    if(d.style.opacity === '0.6') d.style.color = mutedCol;
+  });
 }
 
 function shadeColor(hex, pct) {
@@ -2658,10 +2700,18 @@ function renderColorPickers() {
       onmouseout="this.style.transform='scale(1)';this.style.zIndex='1'">${check}</div>`;
   };
 
-  bgPal.innerHTML = BG_COLORS.map((c,i) =>
-    makeDot(c, c.hex === _selectedBg.hex,
-      `selectBgColor(${i})`, 'bg')
-  ).join('');
+  const darkBgs  = BG_COLORS.map((c,i) => ({c,i})).filter(x => x.c.dark !== false);
+  const lightBgs = BG_COLORS.map((c,i) => ({c,i})).filter(x => x.c.dark === false);
+
+  bgPal.innerHTML =
+    `<div style="font-size:0.65rem;color:var(--muted);margin-bottom:4px;width:100%">Escuros</div>`+
+    `<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;">`+
+    darkBgs.map(({c,i}) => makeDot(c, c.hex === _selectedBg.hex, `selectBgColor(${i})`, 'bg')).join('')+
+    `</div>`+
+    `<div style="font-size:0.65rem;color:var(--muted);margin-bottom:4px;width:100%">Claros</div>`+
+    `<div style="display:flex;flex-wrap:wrap;gap:6px;">`+
+    lightBgs.map(({c,i}) => makeDot(c, c.hex === _selectedBg.hex, `selectBgColor(${i})`, 'bg')).join('')+
+    `</div>`;
 
   acPal.innerHTML = ACCENT_COLORS.map((c,i) =>
     makeDot(c, c.hex === _selectedAccent.hex,
