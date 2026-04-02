@@ -558,48 +558,77 @@ tbody tr:hover{background:rgba(255,255,255,0.018);}
     <div>
       <div class="form-card">
         <h2>Adicionar ao cronograma</h2>
+
+        <!-- PASSO 1: Grande Área -->
         <div class="field">
-          <label>Nome do Tema / Aula</label>
-          <div class="ac-wrap">
-            <input type="text" id="regNome" placeholder="Ex: Pneumonia, AVC, Pré-Natal…" oninput="onRegNome()" autocomplete="off">
-            <div class="ac-list" id="acList" style="display:none"></div>
-          </div>
-        </div>
-        <div class="field">
-          <label>Especialidade</label>
-          <input type="text" id="regEspecialidade" placeholder="Ex: Cardiologia, Obstetrícia, Trauma…" autocomplete="off">
-        </div>
-        <div class="field">
-          <label>Área</label>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;margin-top:0.25rem;" id="areaGrid">
+          <label style="display:flex;align-items:center;gap:6px;">
+            <span style="background:var(--green);color:#000;border-radius:50%;width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;font-size:0.65rem;font-weight:800;flex-shrink:0">1</span>
+            Grande Área
+          </label>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.4rem;margin-top:0.35rem;">
             <button type="button" class="area-btn" onclick="selectArea(this,'Cirurgia Geral')" data-area="Cirurgia Geral"
-              style="padding:0.5rem 0.5rem;border:1px solid var(--border);border-radius:var(--r);background:var(--bg3);color:var(--muted);font-family:inherit;font-size:0.8rem;cursor:pointer;transition:all 0.15s;text-align:center;">
+              style="padding:0.55rem;border:1px solid var(--border);border-radius:var(--r);background:var(--bg3);color:var(--muted);font-family:inherit;font-size:0.82rem;cursor:pointer;transition:all 0.15s;text-align:center;font-weight:500;">
               🔪 Cirurgia Geral
             </button>
             <button type="button" class="area-btn" onclick="selectArea(this,'Clínica Médica')" data-area="Clínica Médica"
-              style="padding:0.5rem 0.5rem;border:1px solid var(--border);border-radius:var(--r);background:var(--bg3);color:var(--muted);font-family:inherit;font-size:0.8rem;cursor:pointer;transition:all 0.15s;text-align:center;">
+              style="padding:0.55rem;border:1px solid var(--border);border-radius:var(--r);background:var(--bg3);color:var(--muted);font-family:inherit;font-size:0.82rem;cursor:pointer;transition:all 0.15s;text-align:center;font-weight:500;">
               🩺 Clínica Médica
             </button>
-            <button type="button" class="area-btn" onclick="selectArea(this,'Pediatria')" data-area="Pediatria"
-              style="padding:0.5rem 0.5rem;border:1px solid var(--border);border-radius:var(--r);background:var(--bg3);color:var(--muted);font-family:inherit;font-size:0.8rem;cursor:pointer;transition:all 0.15s;text-align:center;">
-              👶 Pediatria
-            </button>
             <button type="button" class="area-btn" onclick="selectArea(this,'Ginecologia e Obstetrícia')" data-area="Ginecologia e Obstetrícia"
-              style="padding:0.5rem 0.5rem;border:1px solid var(--border);border-radius:var(--r);background:var(--bg3);color:var(--muted);font-family:inherit;font-size:0.8rem;cursor:pointer;transition:all 0.15s;text-align:center;">
+              style="padding:0.55rem;border:1px solid var(--border);border-radius:var(--r);background:var(--bg3);color:var(--muted);font-family:inherit;font-size:0.82rem;cursor:pointer;transition:all 0.15s;text-align:center;font-weight:500;">
               🤰 Ginecologia e Obstetrícia
             </button>
+            <button type="button" class="area-btn" onclick="selectArea(this,'Pediatria')" data-area="Pediatria"
+              style="padding:0.55rem;border:1px solid var(--border);border-radius:var(--r);background:var(--bg3);color:var(--muted);font-family:inherit;font-size:0.82rem;cursor:pointer;transition:all 0.15s;text-align:center;font-weight:500;">
+              👶 Pediatria
+            </button>
             <button type="button" class="area-btn" onclick="selectArea(this,'Medicina Preventiva')" data-area="Medicina Preventiva"
-              style="padding:0.5rem;border:1px solid var(--border);border-radius:var(--r);background:var(--bg3);color:var(--muted);font-family:inherit;font-size:0.8rem;cursor:pointer;transition:all 0.15s;text-align:center;grid-column:1/-1;">
+              style="padding:0.55rem;border:1px solid var(--border);border-radius:var(--r);background:var(--bg3);color:var(--muted);font-family:inherit;font-size:0.82rem;cursor:pointer;transition:all 0.15s;text-align:center;font-weight:500;grid-column:1/-1;">
               🛡️ Medicina Preventiva
             </button>
           </div>
           <input type="hidden" id="regArea" value="">
         </div>
+
+        <!-- PASSO 2: Especialidade (aparece após escolher área) -->
+        <div class="field" id="specGrid" style="display:none;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:0.75rem;">
+          <!-- preenchido por renderSpecGrid() -->
+        </div>
+        <input type="hidden" id="regEspecialidade" value="">
+
+        <!-- PASSO 3: Nome do Tema -->
         <div class="field">
-          <label>Data que foi estudado</label>
+          <label style="display:flex;align-items:center;gap:6px;">
+            <span style="background:var(--green);color:#000;border-radius:50%;width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;font-size:0.65rem;font-weight:800;flex-shrink:0">2</span>
+            Nome do Tema / Aula
+          </label>
+          <div class="ac-wrap">
+            <input type="text" id="regNome" placeholder="Ex: Pneumonia, AVC, Pré-Natal…" oninput="onRegNome()" autocomplete="off">
+            <div class="ac-list" id="acList" style="display:none"></div>
+          </div>
+        </div>
+
+        <!-- PASSO 4: Data -->
+        <div class="field">
+          <label style="display:flex;align-items:center;gap:6px;">
+            <span style="background:var(--green);color:#000;border-radius:50%;width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;font-size:0.65rem;font-weight:800;flex-shrink:0">3</span>
+            Data que foi estudado
+          </label>
           <input type="date" id="regData" onchange="updatePreview()">
         </div>
+
         <button class="btn-add" onclick="addTema()">✓ Adicionar ao Cronograma</button>
+      </div>
+
+      <!-- Categorizar temas existentes -->
+      <div class="form-card" style="margin-top:1.25rem;">
+        <h2 style="margin-bottom:0.25rem;">📂 Categorizar Temas Existentes</h2>
+        <p style="font-size:0.78rem;color:var(--muted);margin-bottom:1rem;">Adicione Área e Especialidade aos seus temas já cadastrados</p>
+        <div class="field">
+          <label>Buscar tema</label>
+          <input type="text" id="catSearch" placeholder="Digite o nome do tema…" oninput="renderCatList()" autocomplete="off">
+        </div>
+        <div id="catList" style="max-height:300px;overflow-y:auto;"></div>
       </div>
 
       <div class="reg-list-card" id="regListCard" style="display:none">
@@ -1067,9 +1096,10 @@ function calcPctTema(tema) {
 
 function allTemas() {
   const deleted = (marked.__deletedTemas || []);
+  const meta = marked.__meta || {};
   return [
-    ...BASE.map(r=>({...r, _src:'base'})).filter(r=>!deleted.includes(r.conteudo)),
-    ...regExtra.map(r=>({...r, _src:'new', pct_tema: calcPctTema(r) || r.pct_tema}))
+    ...BASE.map(r=>({...r, _src:'base', ...(meta[r.conteudo]||{})})).filter(r=>!deleted.includes(r.conteudo)),
+    ...regExtra.map(r=>({...r, _src:'new', pct_tema: calcPctTema(r) || r.pct_tema, ...(meta[r.conteudo]||{})}))
   ];
 }
 
@@ -1185,7 +1215,7 @@ function goPage(id, el) {
   if(id==='home') renderHome();
   if(id==='calendar') renderCal();
   if(id==='temas') renderTemas();
-  if(id==='registrar') renderRegList();
+  if(id==='registrar') { renderRegList(); renderCatList(); }
   if(id==='foco') renderFoco();
   if(id==='analise') renderAnalise();
   if(id==='simulado') renderSimulados();
@@ -1251,7 +1281,10 @@ function renderHome() {
       : '<span style="color:var(--dim);font-size:0.71rem">Em dia</span>';
     return `<tr>
       <td class="rnum">${i+1}</td>
-      <td><span class="subj-name" onclick='goDetail(${JSON.stringify(t.conteudo)})'>${t.conteudo}</span> <button onclick='openEditModal(${JSON.stringify(t.conteudo)})' title="Editar nome" style="background:none;border:none;color:var(--dim);cursor:pointer;font-size:0.8rem;padding:0 3px;vertical-align:middle;opacity:0.6;" onmouseover="this.style.opacity='1';this.style.color='var(--green)'" onmouseout="this.style.opacity='0.6';this.style.color='var(--dim)'">✏️</button></td>
+      <td>
+        <span class="subj-name" onclick='goDetail(${JSON.stringify(t.conteudo)})'>${t.conteudo}</span>
+        ${t.area?`<span style="font-size:0.6rem;background:var(--green3);color:var(--green);border:1px solid rgba(0,224,138,0.25);border-radius:10px;padding:1px 6px;margin-left:5px;vertical-align:middle">${AREA_ICONS[t.area]||''} ${t.area}</span>`:''}
+        ${t.especialidade?`<span style="font-size:0.6rem;background:var(--blue3);color:var(--blue);border:1px solid rgba(56,182,255,0.25);border-radius:10px;padding:1px 6px;margin-left:3px;vertical-align:middle">${t.especialidade}</span>`:''} <button onclick='openEditModal(${JSON.stringify(t.conteudo)})' title="Editar nome" style="background:none;border:none;color:var(--dim);cursor:pointer;font-size:0.8rem;padding:0 3px;vertical-align:middle;opacity:0.6;" onmouseover="this.style.opacity='1';this.style.color='var(--green)'" onmouseout="this.style.opacity='0.6';this.style.color='var(--dim)'">✏️</button></td>
       <td style="color:var(--muted);font-size:0.78rem">${fmtBR(t.data)}</td>
       <td style="font-size:0.8rem;color:${s==='hoje'?'var(--blue)':s==='atrasado'?'var(--red)':'var(--muted)'}">${nextStr}</td>
       <td>${dotProgress(t)}</td>
@@ -1314,7 +1347,10 @@ function showQuickFilter(tipo) {
         const actBtns = pr.map(e=>`<button class="act-btn" onclick='openModal(${JSON.stringify(t.conteudo)},${JSON.stringify(e.key)})'>✓ ${e.key}</button>`).join(' ');
         return `<tr>
           <td class="rnum">${i+1}</td>
-          <td><span class="subj-name" onclick='goDetail(${JSON.stringify(t.conteudo)})'>${t.conteudo}</span></td>
+          <td>
+        <span class="subj-name" onclick='goDetail(${JSON.stringify(t.conteudo)})'>${t.conteudo}</span>
+        ${t.area?`<span style="font-size:0.6rem;background:var(--green3);color:var(--green);border:1px solid rgba(0,224,138,0.25);border-radius:10px;padding:1px 6px;margin-left:5px;vertical-align:middle">${AREA_ICONS[t.area]||''} ${t.area}</span>`:''}
+        ${t.especialidade?`<span style="font-size:0.6rem;background:var(--blue3);color:var(--blue);border:1px solid rgba(56,182,255,0.25);border-radius:10px;padding:1px 6px;margin-left:3px;vertical-align:middle">${t.especialidade}</span>`:''}</td>
           <td style="color:${tipo==='hoje'?'var(--blue)':'var(--red)'};font-size:0.8rem;font-weight:600">${revLabel}</td>
           <td>${pctBar(t.pct_tema,true)}</td>
           <td>${actBtns}</td>
@@ -1340,7 +1376,10 @@ function renderTemas() {
     const nr = nextPendingRev(t);
     return `<tr>
       <td class="rnum">${i+1}</td>
-      <td><span class="subj-name" onclick='goDetail(${JSON.stringify(t.conteudo)})'>${t.conteudo}</span></td>
+      <td>
+        <span class="subj-name" onclick='goDetail(${JSON.stringify(t.conteudo)})'>${t.conteudo}</span>
+        ${t.area?`<span style="font-size:0.6rem;background:var(--green3);color:var(--green);border:1px solid rgba(0,224,138,0.25);border-radius:10px;padding:1px 6px;margin-left:5px;vertical-align:middle">${AREA_ICONS[t.area]||''} ${t.area}</span>`:''}
+        ${t.especialidade?`<span style="font-size:0.6rem;background:var(--blue3);color:var(--blue);border:1px solid rgba(56,182,255,0.25);border-radius:10px;padding:1px 6px;margin-left:3px;vertical-align:middle">${t.especialidade}</span>`:''}</td>
       <td style="color:var(--muted);font-size:0.78rem">${fmtBRY(t.data)}</td>
       <td>${pctBar(t.pct_tema)}</td>
       <td><span style="font-weight:600;color:var(--green)">${done}</span><span style="color:var(--dim)">/${revs.length}</span></td>
@@ -1682,7 +1721,10 @@ function calDayClick(ds) {
           ? `<button class="act-btn" onclick='openModal(${JSON.stringify(t.conteudo)},${JSON.stringify(e.key)})'>✓ Marcar</button>`
           : `<button class="act-btn" style="color:var(--dim)" onclick='undoMark(${JSON.stringify(t.conteudo)},${JSON.stringify(e.key)})'>↩ Desfazer</button>`;
         return `<tr>
-          <td><span class="subj-name" onclick='goDetail(${JSON.stringify(t.conteudo)})'>${t.conteudo}</span></td>
+          <td>
+        <span class="subj-name" onclick='goDetail(${JSON.stringify(t.conteudo)})'>${t.conteudo}</span>
+        ${t.area?`<span style="font-size:0.6rem;background:var(--green3);color:var(--green);border:1px solid rgba(0,224,138,0.25);border-radius:10px;padding:1px 6px;margin-left:5px;vertical-align:middle">${AREA_ICONS[t.area]||''} ${t.area}</span>`:''}
+        ${t.especialidade?`<span style="font-size:0.6rem;background:var(--blue3);color:var(--blue);border:1px solid rgba(56,182,255,0.25);border-radius:10px;padding:1px 6px;margin-left:3px;vertical-align:middle">${t.especialidade}</span>`:''}</td>
           <td style="font-weight:600;color:var(--muted);white-space:nowrap">${REV_LABELS_SHORT[e.key]||e.key}</td>
           <td>${badgeStatus(s, null)}</td>
           <td>${pctBar(pct,true)}</td>
@@ -1740,22 +1782,109 @@ function updatePreview() {
   }).join('');
 }
 
+// ══════════════════════════════════════
+// MAPA DE ESPECIALIDADES
+// ══════════════════════════════════════
+const SPECIALTY_MAP = {
+  'Cirurgia Geral': [
+    'Cirurgia do Aparelho Digestivo','Cirurgia Geral*','Cirurgia Pediátrica',
+    'Cirurgia Vascular','Dermatologia','Gastroenterologia','Hepatologia',
+    'Ortopedia','Trauma','Urologia'
+  ],
+  'Clínica Médica': [
+    'Cardiologia','Dermatologia','Endocrinologia','Geriatria','Hepatologia',
+    'Infectologia','Nefrologia','Neurologia','Onco e Hematologia',
+    'Pneumologia','Psiquiatria','Reumatologia','Terapia Intensiva',
+    'Toxicologia e Farmacologia'
+  ],
+  'Medicina Preventiva': [
+    'Atuação Médica','Epidemiologia','Medidas de Saúde Coletiva',
+    'Promoção e Prevenção da Saúde','SUS','Testes Diagnósticos',
+    'Vigilância em Saúde'
+  ],
+  'Ginecologia e Obstetrícia': [
+    'Acompanhamento Gestacional','Colo Uterino','Corpo Uterino',
+    'Doenças Clínicas na Gestação','Ginecologia Endócrina','Ginecologia Geral',
+    'Infecções do Trato Genital Feminino','Infertilidade','Mama','Medicina Fetal',
+    'Ovários','Parto','Prematuridade na Obstetrícia','Puerpério',
+    'Sangramentos na Gestação','Sexualidade Feminina','Sofrimento Fetal',
+    'SUA','Uroginecologia','Vulva e Vagina','Úlceras Genitais'
+  ],
+  'Pediatria': [
+    'Alergologia e Imunologia','Cardiologia','Gastroenterologia','Genética',
+    'Infectologia','Neonatologia','Neurologia','Nutrologia',
+    'Otorrinolaringologia','Pediatria*','Pneumologia','Puericultura',
+    'Terapia Intensiva'
+  ]
+};
+
+const AREA_ICONS = {
+  'Cirurgia Geral': '🔪',
+  'Clínica Médica': '🩺',
+  'Medicina Preventiva': '🛡️',
+  'Ginecologia e Obstetrícia': '🤰',
+  'Pediatria': '👶'
+};
+
 function selectArea(btn, area) {
-  // Toggle selection
+  const current = document.getElementById('regArea').value;
+  // Deselect all area buttons
   document.querySelectorAll('.area-btn').forEach(b => {
     b.style.borderColor = 'var(--border)';
     b.style.color = 'var(--muted)';
     b.style.background = 'var(--bg3)';
     b.style.fontWeight = '400';
   });
-  if (document.getElementById('regArea').value === area) {
+  if (current === area) {
+    // Deselect
     document.getElementById('regArea').value = '';
+    document.getElementById('regEspecialidade').value = '';
+    document.getElementById('specGrid').style.display = 'none';
   } else {
+    // Select area
     btn.style.borderColor = 'var(--green)';
     btn.style.color = 'var(--green)';
     btn.style.background = 'var(--green3)';
     btn.style.fontWeight = '700';
     document.getElementById('regArea').value = area;
+    document.getElementById('regEspecialidade').value = '';
+    renderSpecGrid(area);
+  }
+}
+
+function renderSpecGrid(area) {
+  const specs = SPECIALTY_MAP[area] || [];
+  const grid = document.getElementById('specGrid');
+  if (!specs.length) { grid.style.display='none'; return; }
+  grid.style.display = 'block';
+  grid.innerHTML = `
+    <div style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);margin-bottom:0.5rem;">Especialidade</div>
+    <div style="display:flex;flex-wrap:wrap;gap:0.4rem;">
+      ${specs.map(s => `
+        <button type="button" class="spec-btn" data-spec="${s}"
+          onclick="selectSpec(this,'${s.replace(/'/g,"\'")}')"
+          style="padding:0.3rem 0.75rem;border:1px solid var(--border);border-radius:20px;background:var(--bg3);color:var(--muted);font-family:inherit;font-size:0.78rem;cursor:pointer;transition:all 0.15s;">
+          ${s}
+        </button>`).join('')}
+    </div>`;
+}
+
+function selectSpec(btn, spec) {
+  document.querySelectorAll('.spec-btn').forEach(b => {
+    b.style.borderColor = 'var(--border)';
+    b.style.color = 'var(--muted)';
+    b.style.background = 'var(--bg3)';
+    b.style.fontWeight = '400';
+  });
+  const current = document.getElementById('regEspecialidade').value;
+  if (current === spec) {
+    document.getElementById('regEspecialidade').value = '';
+  } else {
+    btn.style.borderColor = 'var(--blue)';
+    btn.style.color = 'var(--blue)';
+    btn.style.background = 'var(--blue3)';
+    btn.style.fontWeight = '700';
+    document.getElementById('regEspecialidade').value = spec;
   }
 }
 
@@ -1777,7 +1906,8 @@ function addTema() {
   document.getElementById('regNome').value='';
   document.getElementById('regEspecialidade').value='';
   document.getElementById('regArea').value='';
-  document.querySelectorAll('.area-btn').forEach(b => {
+  document.getElementById('specGrid').style.display='none';
+  document.querySelectorAll('.area-btn,.spec-btn').forEach(b => {
     b.style.borderColor='var(--border)';b.style.color='var(--muted)';
     b.style.background='var(--bg3)';b.style.fontWeight='400';
   });
@@ -1796,7 +1926,10 @@ function renderRegList() {
   document.getElementById('regListTitle').textContent=`Adicionados nesta sessão (${regExtra.length})`;
   document.getElementById('regListBody').innerHTML = regExtra.map((t,i)=>`
     <tr>
-      <td style="font-weight:500">${t.conteudo}${t.area?`<span style="font-size:0.65rem;background:var(--blue3);color:var(--blue);border:1px solid rgba(56,182,255,0.3);border-radius:10px;padding:1px 7px;margin-left:6px">${t.area}</span>`:''}
+      <td style="font-weight:500">
+        ${t.conteudo}
+        ${t.area?`<span style="font-size:0.62rem;background:var(--green3);color:var(--green);border:1px solid rgba(0,224,138,0.3);border-radius:10px;padding:1px 7px;margin-left:5px">${AREA_ICONS[t.area]||''} ${t.area}</span>`:''}
+        ${t.especialidade?`<span style="font-size:0.62rem;background:var(--blue3);color:var(--blue);border:1px solid rgba(56,182,255,0.3);border-radius:10px;padding:1px 7px;margin-left:3px">${t.especialidade}</span>`:''}
       </td>
       <td style="color:var(--muted);font-size:0.78rem">${fmtBR(t.data)}</td>
       <td style="color:var(--muted);font-size:0.78rem">${fmtBR(t.revisions.R1)}</td>
@@ -1806,6 +1939,46 @@ function renderRegList() {
     </tr>`).join('');
 }
 function removeReg(i){regExtra.splice(i,1);save();renderRegList();renderHome();}
+
+// ── CATEGORIZAR TEMAS EXISTENTES ──
+function renderCatList() {
+  const q = (document.getElementById('catSearch')?.value||'').toLowerCase();
+  const temas = allTemas().filter(t => !q || t.conteudo.toLowerCase().includes(q));
+  const el = document.getElementById('catList');
+  if(!el) return;
+  if(!temas.length) { el.innerHTML='<div style="color:var(--dim);font-size:0.82rem;padding:0.5rem">Nenhum tema encontrado</div>'; return; }
+  el.innerHTML = temas.map(t => {
+    const areaVal = t.area || '';
+    const specVal = t.especialidade || '';
+    return `<div style="padding:0.65rem;border:1px solid var(--border);border-radius:var(--r);margin-bottom:0.5rem;background:var(--bg3);">
+      <div style="font-weight:600;font-size:0.88rem;margin-bottom:0.5rem;">${t.conteudo}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;">
+        <select onchange="saveCategoria('${t.conteudo.replace(/'/g,"\'")}','area',this.value)"
+          style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:0.35rem 0.5rem;color:var(--text);font-family:inherit;font-size:0.78rem;outline:none;">
+          <option value="">— Grande Área —</option>
+          ${Object.keys(SPECIALTY_MAP).map(a=>`<option value="${a}" ${areaVal===a?'selected':''}>${AREA_ICONS[a]||''} ${a}</option>`).join('')}
+        </select>
+        <select onchange="saveCategoria('${t.conteudo.replace(/'/g,"\'")}','especialidade',this.value)"
+          style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:0.35rem 0.5rem;color:var(--text);font-family:inherit;font-size:0.78rem;outline:none;">
+          <option value="">— Especialidade —</option>
+          ${(SPECIALTY_MAP[areaVal]||[...new Set(Object.values(SPECIALTY_MAP).flat())]).map(s=>`<option value="${s}" ${specVal===s?'selected':''}>${s}</option>`).join('')}
+        </select>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function saveCategoria(nome, field, value) {
+  // Update in regExtra if user-added
+  const t = regExtra.find(r => r.conteudo === nome);
+  if(t) { t[field] = value; save(); return; }
+  // For BASE temas, store in marked as metadata
+  if(!marked.__meta) marked.__meta = {};
+  if(!marked.__meta[nome]) marked.__meta[nome] = {};
+  marked.__meta[nome][field] = value;
+  save();
+  toast('✓ Categoria salva!', 'ok');
+}
 function clearReg(){if(!confirm('Remover todos os temas adicionados nesta sessão?'))return;regExtra=[];save();renderRegList();renderHome();}
 
 // ═══════════════════════════════════
@@ -2176,7 +2349,10 @@ function renderAnalise() {
 
     return `<tr>
       <td class="rnum">${i+1}</td>
-      <td><span class="subj-name" onclick='goDetail(${JSON.stringify(t.conteudo)})'>${t.conteudo}</span></td>
+      <td>
+        <span class="subj-name" onclick='goDetail(${JSON.stringify(t.conteudo)})'>${t.conteudo}</span>
+        ${t.area?`<span style="font-size:0.6rem;background:var(--green3);color:var(--green);border:1px solid rgba(0,224,138,0.25);border-radius:10px;padding:1px 6px;margin-left:5px;vertical-align:middle">${AREA_ICONS[t.area]||''} ${t.area}</span>`:''}
+        ${t.especialidade?`<span style="font-size:0.6rem;background:var(--blue3);color:var(--blue);border:1px solid rgba(56,182,255,0.25);border-radius:10px;padding:1px 6px;margin-left:3px;vertical-align:middle">${t.especialidade}</span>`:''}</td>
       <td><div style="display:flex;align-items:center;gap:6px">
         <div style="width:50px;height:5px;background:var(--bg4);border-radius:3px;overflow:hidden"><div style="height:100%;width:${n}%;background:${col}"></div></div>
         <span style="font-weight:700;color:${col}">${t.pct_tema || '—'}</span>
