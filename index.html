@@ -839,13 +839,53 @@ tbody tr:hover{background:rgba(255,255,255,0.018);}
     </div>
   </div>
 
-  <!-- Tema de cores -->
+  <!-- Tema de cores custom -->
   <div class="form-card">
-    <h2 style="margin-bottom:0.5rem;">🎨 Tema de Cores</h2>
-    <p style="font-size:0.8rem;color:var(--muted);margin-bottom:0.5rem;">Temas escuros sólidos</p>
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:0.65rem;margin-bottom:1.25rem;" id="themeGrid"></div>
-    <p style="font-size:0.8rem;color:var(--muted);margin-bottom:0.5rem;">Temas com tabela 2 cores <span style="font-size:0.7rem;background:var(--blue3);color:var(--blue);border-radius:10px;padding:1px 8px;margin-left:4px;">NOVO</span></p>
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:0.65rem;" id="themeGridDual"></div>
+    <h2 style="margin-bottom:0.5rem;">🎨 Cores Personalizadas</h2>
+    <p style="font-size:0.82rem;color:var(--muted);margin-bottom:1.5rem;">Escolha a cor do <strong style="color:var(--text)">fundo</strong> e a cor de <strong style="color:var(--text)">destaque</strong> do aplicativo</p>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem;">
+      <!-- Cor do fundo -->
+      <div>
+        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);margin-bottom:0.75rem;">🌑 Cor do Fundo</div>
+        <div id="bgPalette" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+      </div>
+      <!-- Cor de destaque -->
+      <div>
+        <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);margin-bottom:0.75rem;">✨ Cor de Destaque</div>
+        <div id="accentPalette" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+      </div>
+    </div>
+
+    <!-- Preview -->
+    <div style="margin-bottom:1.25rem;">
+      <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);margin-bottom:0.75rem;">👁 Preview</div>
+      <div id="themePreview" style="border-radius:10px;overflow:hidden;border:1px solid var(--border2);">
+        <div id="prevTopbar" style="height:36px;display:flex;align-items:center;padding:0 1rem;gap:8px;">
+          <div id="prevDot" style="width:8px;height:8px;border-radius:50%;"></div>
+          <span id="prevTitle2" style="font-size:0.75rem;font-weight:700;">ResidênciaApp</span>
+        </div>
+        <div id="prevBody" style="padding:0.75rem;display:flex;gap:8px;">
+          <div id="prevCard1" style="flex:1;border-radius:6px;padding:0.6rem;border-width:1px;border-style:solid;">
+            <div style="font-size:0.6rem;opacity:0.6;margin-bottom:3px;">REVISÕES HOJE</div>
+            <div id="prevNum" style="font-size:1.1rem;font-weight:800;">0</div>
+          </div>
+          <div id="prevCard2" style="flex:1;border-radius:6px;padding:0.6rem;background:rgba(255,255,255,0.04);border-width:1px;border-style:solid;border-color:rgba(255,255,255,0.1);">
+            <div style="font-size:0.6rem;opacity:0.6;margin-bottom:3px;">TEMAS</div>
+            <div style="font-size:1.1rem;font-weight:800;opacity:0.5;">32</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Apply button -->
+    <button onclick="applyCustomColors()" style="width:100%;padding:0.7rem;background:var(--green);border:none;border-radius:var(--r);font-family:inherit;font-size:0.9rem;font-weight:700;color:#000;cursor:pointer;transition:background 0.15s;" onmouseover="this.style.background='var(--green2)'" onmouseout="this.style.background='var(--green)'">
+      ✓ Aplicar Tema Personalizado
+    </button>
+
+    <!-- Hidden grids for compat -->
+    <div id="themeGrid" style="display:none"></div>
+    <div id="themeGridDual" style="display:none"></div>
   </div>
 </div>
 
@@ -2507,60 +2547,85 @@ function renderSimulados() {
 // ═══════════════════════════════════
 // CONFIGURAÇÕES
 // ═══════════════════════════════════
-const THEMES = [
-  // ── Temas escuros sólidos ──
-  { id:'dark-blue',   name:'Azul Escuro',    desc:'Padrão',      bg:'#080f1a', bg2:'#0d1825', accent:'#38b6ff', green:'#00e08a', row1:'', row2:'' },
-  { id:'dark-green',  name:'Verde Escuro',   desc:'Floresta',    bg:'#061410', bg2:'#0a1f1a', accent:'#34d399', green:'#10b981', row1:'', row2:'' },
-  { id:'dark-purple', name:'Roxo Escuro',    desc:'Galáxia',     bg:'#0d0a1a', bg2:'#150f2a', accent:'#a78bfa', green:'#8b5cf6', row1:'', row2:'' },
-  { id:'dark-red',    name:'Vermelho',       desc:'Fogo',        bg:'#120808', bg2:'#1e0f0f', accent:'#f87171', green:'#ef4444', row1:'', row2:'' },
-  { id:'dark-gold',   name:'Dourado',        desc:'Premium',     bg:'#0f0c05', bg2:'#1a1608', accent:'#fbbf24', green:'#f59e0b', row1:'', row2:'' },
-  { id:'dark-slate',  name:'Cinza Escuro',   desc:'Neutro',      bg:'#0a0c10', bg2:'#111318', accent:'#94a3b8', green:'#64748b', row1:'', row2:'' },
-  { id:'dark-teal',   name:'Verde-Azulado',  desc:'Oceano',      bg:'#041418', bg2:'#072028', accent:'#2dd4bf', green:'#14b8a6', row1:'', row2:'' },
-  { id:'dark-rose',   name:'Rosa Escuro',    desc:'Rosa',        bg:'#140810', bg2:'#1f0f1a', accent:'#f472b6', green:'#ec4899', row1:'', row2:'' },
-  // ── Temas com tabela 2 cores ──
-  { id:'dual-blue',   name:'Dual Azul',      desc:'2 cores',     bg:'#080f1a', bg2:'#0d1825', accent:'#38b6ff', green:'#00e08a', row1:'rgba(56,182,255,0.04)', row2:'rgba(0,0,0,0)' },
-  { id:'dual-green',  name:'Dual Verde',     desc:'2 cores',     bg:'#061410', bg2:'#0a1f1a', accent:'#34d399', green:'#10b981', row1:'rgba(52,211,153,0.05)', row2:'rgba(0,0,0,0)' },
-  { id:'dual-purple', name:'Dual Roxo',      desc:'2 cores',     bg:'#0d0a1a', bg2:'#150f2a', accent:'#a78bfa', green:'#8b5cf6', row1:'rgba(167,139,250,0.05)', row2:'rgba(0,0,0,0)' },
-  { id:'dual-gold',   name:'Dual Dourado',   desc:'2 cores',     bg:'#0f0c05', bg2:'#1a1608', accent:'#fbbf24', green:'#f59e0b', row1:'rgba(251,191,36,0.05)', row2:'rgba(0,0,0,0)' },
+// ── PALETAS DE CORES ──
+const BG_COLORS = [
+  { name:'Preto',        hex:'#0a0a0a', bg2:'#111111' },
+  { name:'Grafite',      hex:'#111318', bg2:'#1a1d24' },
+  { name:'Marinho',      hex:'#080f1a', bg2:'#0d1825' },
+  { name:'Azul Escuro',  hex:'#070d1f', bg2:'#0c1530' },
+  { name:'Verde Escuro', hex:'#061410', bg2:'#0a1f1a' },
+  { name:'Roxo Escuro',  hex:'#0d0a1a', bg2:'#150f2a' },
+  { name:'Vinho',        hex:'#120808', bg2:'#1e0f0f' },
+  { name:'Cacau',        hex:'#100c06', bg2:'#1a1408' },
+  { name:'Teal Escuro',  hex:'#041418', bg2:'#072028' },
+  { name:'Rosa Escuro',  hex:'#140810', bg2:'#1f0f1a' },
+  { name:'Chumbo',       hex:'#0a0c10', bg2:'#121520' },
+  { name:'Musgo',        hex:'#090f08', bg2:'#111a10' },
 ];
 
-function applyTheme(t) {
+const ACCENT_COLORS = [
+  { name:'Azul',         hex:'#38b6ff' },
+  { name:'Verde Neon',   hex:'#00e08a' },
+  { name:'Verde Menta',  hex:'#34d399' },
+  { name:'Roxo',         hex:'#a78bfa' },
+  { name:'Rosa',         hex:'#f472b6' },
+  { name:'Vermelho',     hex:'#ff5370' },
+  { name:'Laranja',      hex:'#fb923c' },
+  { name:'Amarelo',      hex:'#fbbf24' },
+  { name:'Ciano',        hex:'#22d3ee' },
+  { name:'Lima',         hex:'#a3e635' },
+  { name:'Índigo',       hex:'#818cf8' },
+  { name:'Branco',       hex:'#e2e8f0' },
+];
+
+let _selectedBg     = JSON.parse(localStorage.getItem('customBg')     || 'null') || BG_COLORS[2];
+let _selectedAccent = JSON.parse(localStorage.getItem('customAccent') || 'null') || ACCENT_COLORS[0];
+
+// Manter compatibilidade com código antigo
+const THEMES = [];
+
+function applyCustomColors(bgCol, accentCol, save=true) {
+  const bg = bgCol || _selectedBg;
+  const ac = accentCol || _selectedAccent;
   const r = document.documentElement.style;
-  r.setProperty('--bg',  t.bg);
-  r.setProperty('--bg2', t.bg2);
-  r.setProperty('--bg3', shadeColor(t.bg2, 10));
-  r.setProperty('--bg4', shadeColor(t.bg2, 20));
-  r.setProperty('--border',  shadeColor(t.bg2, 30));
-  r.setProperty('--border2', shadeColor(t.bg2, 45));
-  r.setProperty('--blue',  t.accent);
-  r.setProperty('--blue2', shadeColor(t.accent, -20));
-  r.setProperty('--blue3', t.accent + '1a');
-  r.setProperty('--green',  t.green);
-  r.setProperty('--green2', shadeColor(t.green, -15));
-  r.setProperty('--green3', t.green + '1a');
-  r.setProperty('--dim', shadeColor(t.bg2, 55));
-  r.setProperty('--muted', shadeColor(t.accent, -30) + 'cc');
-  r.setProperty('--row1', t.row1 || '');
-  r.setProperty('--row2', t.row2 || '');
-  localStorage.setItem('appTheme', t.id);
-  // Apply dual-color rows if set
-  applyTableRows(t.row1, t.row2);
-  renderThemeGrid();
+  r.setProperty('--bg',      bg.hex);
+  r.setProperty('--bg2',     bg.bg2);
+  r.setProperty('--bg3',     shadeColor(bg.bg2, 10));
+  r.setProperty('--bg4',     shadeColor(bg.bg2, 20));
+  r.setProperty('--border',  shadeColor(bg.bg2, 30));
+  r.setProperty('--border2', shadeColor(bg.bg2, 45));
+  r.setProperty('--blue',    ac.hex);
+  r.setProperty('--blue2',   shadeColor(ac.hex, -20));
+  r.setProperty('--blue3',   ac.hex + '22');
+  r.setProperty('--green',   ac.hex);
+  r.setProperty('--green2',  shadeColor(ac.hex, -15));
+  r.setProperty('--green3',  ac.hex + '1a');
+  r.setProperty('--dim',     shadeColor(bg.bg2, 55));
+  r.setProperty('--muted',   shadeColor(ac.hex, -30) + 'cc');
+  r.setProperty('--text',    '#ddeeff');
+  if(save) {
+    localStorage.setItem('customBg',     JSON.stringify(bg));
+    localStorage.setItem('customAccent', JSON.stringify(ac));
+    toast('✓ Tema aplicado!', 'ok');
+  }
+  updatePreviewColors(bg, ac);
 }
 
-function applyTableRows(row1, row2) {
-  // Remove old style if exists
-  const old = document.getElementById('dualRowStyle');
-  if (old) old.remove();
-  if (!row1) return; // no dual color
-  const style = document.createElement('style');
-  style.id = 'dualRowStyle';
-  style.textContent = `
-    tbody tr:nth-child(odd) { background: ${row1} !important; }
-    tbody tr:nth-child(even) { background: ${row2} !important; }
-    tbody tr:hover { filter: brightness(1.15) !important; }
-  `;
-  document.head.appendChild(style);
+// Legacy compat
+function applyTheme(t) { applyCustomColors(); }
+function applyTableRows() {}
+
+function updatePreviewColors(bg, ac) {
+  const pb = document.getElementById('prevTopbar');
+  const pd = document.getElementById('prevDot');
+  const pn = document.getElementById('prevNum');
+  const pc1 = document.getElementById('prevCard1');
+  const pb2 = document.getElementById('prevBody');
+  if(pb)  pb.style.background = bg.bg2;
+  if(pb2) pb2.style.background = bg.hex;
+  if(pd)  { pd.style.background = ac.hex; pd.style.boxShadow = '0 0 6px '+ac.hex; }
+  if(pn)  pn.style.color = ac.hex;
+  if(pc1) { pc1.style.background = ac.hex+'18'; pc1.style.borderColor = ac.hex+'44'; }
 }
 
 function shadeColor(hex, pct) {
@@ -2575,40 +2640,46 @@ function shadeColor(hex, pct) {
 }
 
 function renderThemeGrid() {
-  const grid = document.getElementById('themeGrid');
-  const gridDual = document.getElementById('themeGridDual');
-  if (!grid) return;
-  const saved = localStorage.getItem('appTheme') || 'dark-blue';
+  // Now renders the color pickers
+  renderColorPickers();
+}
 
-  const makeCard = (t) => {
-    const active = t.id === saved;
-    const isDual = !!t.row1;
-    const preview = isDual
-      ? `<div style="height:52px;background:${t.bg2};display:flex;flex-direction:column;justify-content:center;gap:3px;padding:4px 8px;">
-           <div style="height:8px;border-radius:2px;background:${t.row1 || 'rgba(255,255,255,0.05)'}"></div>
-           <div style="height:8px;border-radius:2px;background:${t.row2 || 'rgba(0,0,0,0)'}"></div>
-           <div style="height:8px;border-radius:2px;background:${t.row1 || 'rgba(255,255,255,0.05)'}"></div>
-         </div>`
-      : `<div style="height:52px;background:linear-gradient(135deg,${t.bg} 0%,${t.bg2} 50%,${shadeColor(t.bg2,15)} 100%);display:flex;align-items:center;justify-content:center;gap:5px;">
-           <div style="width:12px;height:12px;border-radius:50%;background:${t.green};box-shadow:0 0 6px ${t.green}"></div>
-           <div style="width:8px;height:8px;border-radius:50%;background:${t.accent};opacity:0.7"></div>
-         </div>`;
-    return `<div onclick="applyTheme(${JSON.stringify(t).replace(/"/g,'&quot;')})"
-      style="cursor:pointer;border:2px solid ${active ? t.green : 'rgba(255,255,255,0.08)'};border-radius:10px;overflow:hidden;transition:all 0.2s;${active?'box-shadow:0 0 14px '+t.green+'55':''}"
-      onmouseover="this.style.borderColor='${t.green}'" onmouseout="this.style.borderColor='${active ? t.green : 'rgba(255,255,255,0.08)'}'">
-      ${preview}
-      <div style="padding:0.45rem 0.65rem;background:${t.bg2};">
-        <div style="font-size:0.76rem;font-weight:700;color:${t.green}">${t.name}</div>
-        <div style="font-size:0.66rem;color:rgba(255,255,255,0.35)">${t.desc}${active?' · ativo':''}</div>
-      </div>
-    </div>`;
+function renderColorPickers() {
+  const bgPal = document.getElementById('bgPalette');
+  const acPal = document.getElementById('accentPalette');
+  if (!bgPal || !acPal) return;
+
+  const makeDot = (col, isSelected, onClick, type) => {
+    const sel = isSelected ? `box-shadow:0 0 0 2px #fff, 0 0 0 4px ${col.hex};` : '';
+    const check = isSelected ? `<span style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#fff;font-size:10px;font-weight:900;text-shadow:0 0 3px rgba(0,0,0,0.8)">✓</span>` : '';
+    return `<div onclick="${onClick}" title="${col.name}"
+      style="position:relative;width:28px;height:28px;border-radius:50%;background:${col.hex};cursor:pointer;transition:all 0.15s;${sel}flex-shrink:0;"
+      onmouseover="this.style.transform='scale(1.2)';this.style.zIndex='2'"
+      onmouseout="this.style.transform='scale(1)';this.style.zIndex='1'">${check}</div>`;
   };
 
-  const solidThemes = THEMES.filter(t => !t.row1);
-  const dualThemes  = THEMES.filter(t => !!t.row1);
+  bgPal.innerHTML = BG_COLORS.map((c,i) =>
+    makeDot(c, c.hex === _selectedBg.hex,
+      `selectBgColor(${i})`, 'bg')
+  ).join('');
 
-  grid.innerHTML = solidThemes.map(makeCard).join('');
-  if(gridDual) gridDual.innerHTML = dualThemes.map(makeCard).join('');
+  acPal.innerHTML = ACCENT_COLORS.map((c,i) =>
+    makeDot(c, c.hex === _selectedAccent.hex,
+      `selectAccentColor(${i})`, 'accent')
+  ).join('');
+
+  // Update preview
+  updatePreviewColors(_selectedBg, _selectedAccent);
+}
+
+function selectBgColor(i) {
+  _selectedBg = BG_COLORS[i];
+  renderColorPickers();
+}
+
+function selectAccentColor(i) {
+  _selectedAccent = ACCENT_COLORS[i];
+  renderColorPickers();
 }
 
 function applyFontSize(size) {
@@ -2654,7 +2725,7 @@ function renderConfig() {
     if(el1) el1.textContent = name;
     if(el2) el2.textContent = currentUser.email;
   }
-  renderThemeGrid();
+  renderColorPickers();
   // Restore active states
   const fs = localStorage.getItem('fontSize') || 'medium';
   const den = localStorage.getItem('density') || 'normal';
@@ -2662,11 +2733,12 @@ function renderConfig() {
 }
 
 function loadSavedTheme() {
-  const saved = localStorage.getItem('appTheme');
-  if(saved) {
-    const t = THEMES.find(x => x.id === saved);
-    if(t) applyTheme(t);
-  }
+  // Load custom colors
+  const savedBg     = JSON.parse(localStorage.getItem('customBg')     || 'null');
+  const savedAccent = JSON.parse(localStorage.getItem('customAccent') || 'null');
+  if(savedBg)     _selectedBg     = savedBg;
+  if(savedAccent) _selectedAccent = savedAccent;
+  applyCustomColors(_selectedBg, _selectedAccent, false);
   // Apply font size and density
   const fs = localStorage.getItem('fontSize') || 'medium';
   const den = localStorage.getItem('density') || 'normal';
