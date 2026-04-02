@@ -2677,6 +2677,7 @@ async function startApp(user) {
   const name = user.user_metadata?.full_name || user.email.split('@')[0];
   document.getElementById('brandUser').textContent = name;
   hideLoginScreen();
+  // Mostra loading só na primeira vez (login)
   showLoadingOverlay(true);
   await loadFromSupabase();
   showLoadingOverlay(false);
@@ -2693,12 +2694,19 @@ async function startApp(user) {
 
 function showLoadingOverlay(v) {
   const el = document.getElementById('loadingOverlay');
+  if (!el) return;
   if (v) {
     el.style.display = 'flex';
-    // Safety net: never stay loading more than 5 seconds
+    // Safety net: nunca fica mais de 3 segundos carregando
     clearTimeout(window._loadTimeout);
     window._loadTimeout = setTimeout(() => {
       el.style.display = 'none';
+    }, 3000);
+  } else {
+    clearTimeout(window._loadTimeout);
+    el.style.display = 'none';
+  }
+}one';
     }, 5000);
   } else {
     clearTimeout(window._loadTimeout);
@@ -2709,22 +2717,8 @@ function showLoadingOverlay(v) {
 // When user comes back to the tab, hide loading if app already started
 document.addEventListener('visibilitychange', () => {
   if (!document.hidden && currentUser) {
-    // Voltou para o site — recarrega dados sem mostrar loading
+    // Voltou para o site — apenas esconde o loading, não recarrega dados
     showLoadingOverlay(false);
-    loadFromSupabase().then(() => {
-      renderHome();
-      renderStreak();
-      // Re-render página atual
-      const activePage = document.querySelector('.page.active');
-      if (activePage) {
-        const id = activePage.id.replace('page-','');
-        if(id==='calendar') renderCal();
-        if(id==='temas') renderTemas();
-        if(id==='foco') renderFoco();
-        if(id==='analise') renderAnalise();
-        if(id==='simulado') renderSimulados();
-      }
-    });
   }
   if (document.hidden && currentUser) {
     _doSave();
