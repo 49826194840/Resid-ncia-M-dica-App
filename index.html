@@ -152,12 +152,12 @@ tbody tr:hover{background:rgba(255,255,255,0.018);}
 .cal-dow{padding:0.6rem 0;text-align:center;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text);background:var(--bg3);border-bottom:2px solid var(--border);}
 .cal-cell{min-height:80px;border-right:1px solid rgba(56,90,130,0.5);border-bottom:1px solid rgba(56,90,130,0.5);padding:5px;position:relative;cursor:default;background:var(--bg2);}
 .cal-cell:nth-child(7n){border-right:none;}
-.cal-cell.other-month{background:var(--bg);}.cal-cell.other-month .cal-day-num{color:var(--dim);opacity:0.5;}
+.cal-cell.other-month{background:var(--bg);}.cal-cell.other-month .cal-day-num{color:rgba(255,255,255,0.3);}
 .cal-cell.today{background:rgba(56,182,255,0.12);border-top:2px solid var(--blue);}
-.cal-cell.today .cal-day-num{color:var(--blue);font-weight:800;background:rgba(56,182,255,0.15);border-radius:50%;}
+.cal-cell.today .cal-day-num{color:#ffffff;font-weight:800;background:var(--blue);border-radius:50%;}
 .cal-cell.has-rev{cursor:pointer;}
 .cal-cell.has-rev:hover{background:rgba(0,224,138,0.08);}
-.cal-day-num{font-size:0.85rem;font-weight:700;color:var(--text);margin-bottom:3px;padding:2px 4px;display:inline-block;border-radius:50%;width:24px;text-align:center;}
+.cal-day-num{font-size:0.88rem;font-weight:800;color:#ffffff;margin-bottom:3px;padding:2px 4px;display:inline-block;border-radius:50%;width:26px;text-align:center;}
 .cal-pill{font-size:0.68rem;font-weight:600;padding:2px 5px;border-radius:4px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;display:block;line-height:1.45;}
 .cal-pill.p-hoje{background:var(--blue3);color:var(--blue);border:1px solid rgba(56,182,255,0.25);}
 .cal-pill.p-atrasado{background:var(--red3);color:var(--red);border:1px solid rgba(255,83,112,0.25);}
@@ -475,7 +475,7 @@ tbody tr:hover{background:rgba(255,255,255,0.018);}
     <div class="cal-grid" id="calGrid"></div>
   </div>
   <div class="sec-hdr" style="margin-top:1rem">
-    <div class="sec-title"><div class="sec-title-dot"></div> Eventos do Dia Selecionado</div>
+    <div class="sec-title"><div class="sec-title-dot"></div> <span id="calDayTitle">Eventos do Dia Selecionado</span></div>
   </div>
   <div class="tbl-wrap" id="calDayPanel">
     <div style="padding:1.5rem;text-align:center;color:var(--dim)">Clique em um dia no calendário para ver os eventos</div>
@@ -1578,27 +1578,39 @@ function calDayClick(ds) {
   const evs = evMap[ds] || [];
   const panel = document.getElementById('calDayPanel');
   const dateLabel = fmtBRY(ds);
+
+  // Update section title with selected date
+  const secTitle = document.getElementById('calDayTitle');
+  if(secTitle) secTitle.textContent = `Eventos de ${dateLabel}`;
+
   if(!evs.length){
     panel.innerHTML=`<div style="padding:1.5rem;text-align:center;color:var(--dim)">Sem revisões em ${dateLabel}</div>`;
-    return;
+  } else {
+    const REV_LABELS_SHORT = {R1:'Pós Aula',R2:'2ª Rev.',R3:'3ª Rev.',R4:'4ª Rev.',R5:'5ª Rev.',R6:'6ª Rev.',R7:'7ª Rev.'};
+    panel.innerHTML = `<div style="overflow-x:auto"><table style="width:100%;min-width:500px">
+      <thead><tr><th>Tema</th><th>Revisão</th><th>Status</th><th>% Acerto</th><th>Ação</th></tr></thead>
+      <tbody>${evs.map(e=>{
+        const s = e.mk?'done':isSame(e.d,TODAY)?'hoje':e.d<TODAY?'atrasado':'futuro';
+        const t = e.tema;
+        const pct = e.mk ? e.mk.pct : '';
+        const actBtn = !e.mk
+          ? `<button class="act-btn" onclick='openModal(${JSON.stringify(t.conteudo)},${JSON.stringify(e.key)})'>✓ Marcar</button>`
+          : `<button class="act-btn" style="color:var(--dim)" onclick='undoMark(${JSON.stringify(t.conteudo)},${JSON.stringify(e.key)})'>↩ Desfazer</button>`;
+        return `<tr>
+          <td><span class="subj-name" onclick='goDetail(${JSON.stringify(t.conteudo)})'>${t.conteudo}</span></td>
+          <td style="font-weight:600;color:var(--muted);white-space:nowrap">${REV_LABELS_SHORT[e.key]||e.key}</td>
+          <td>${badgeStatus(s, null)}</td>
+          <td>${pctBar(pct,true)}</td>
+          <td>${actBtn}</td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table></div>`;
   }
-  panel.innerHTML = `<table style="width:100%;min-width:500px"><thead><tr><th>Tema</th><th>Revisão</th><th>Status</th><th>% Acerto</th><th>Ação</th></tr></thead><tbody>${
-    evs.map(e=>{
-      const s = e.mk?'done':isSame(e.d,TODAY)?'hoje':e.d<TODAY?'atrasado':'futuro';
-      const t = e.tema;
-      const pct = e.mk ? e.mk.pct : '';
-      const actBtn = !e.mk
-        ? `<button class="act-btn" onclick='openModal(${JSON.stringify(t.conteudo)},${JSON.stringify(e.key)})'>✓ Marcar</button>`
-        : '<span style="color:var(--green);font-size:0.72rem">✓ Feito</span>';
-      return `<tr>
-        <td><span class="subj-name" onclick='goDetail(${JSON.stringify(t.conteudo)})'>${t.conteudo}</span></td>
-        <td style="font-weight:600;color:var(--muted)">${e.key}</td>
-        <td>${badgeStatus(s, null)}</td>
-        <td>${pctBar(pct,true)}</td>
-        <td>${actBtn}</td>
-      </tr>`;
-    }).join('')
-  }</tbody></table>`;
+
+  // Scroll suavemente para o painel de eventos
+  setTimeout(() => {
+    panel.scrollIntoView({behavior:'smooth', block:'start'});
+  }, 50);
 }
 
 // ═══════════════════════════════════
