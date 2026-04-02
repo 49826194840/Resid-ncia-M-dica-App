@@ -796,11 +796,56 @@ tbody tr:hover{background:rgba(255,255,255,0.018);}
     </div>
   </div>
 
+  <!-- Aparência -->
+  <div class="form-card" style="margin-bottom:1.25rem;">
+    <h2 style="margin-bottom:1.25rem;">✏️ Aparência</h2>
+
+    <!-- Font size -->
+    <div style="margin-bottom:1.5rem;">
+      <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);margin-bottom:0.75rem;">Tamanho da Fonte</div>
+      <div style="display:flex;gap:0.5rem;">
+        <button class="font-btn" data-size="small" onclick="applyFontSize('small')"
+          style="flex:1;padding:0.6rem;border:1px solid var(--border);border-radius:var(--r);background:var(--bg3);color:var(--muted);font-family:inherit;font-size:0.75rem;cursor:pointer;transition:all 0.15s;">
+          A<br><span style="font-size:0.65rem;opacity:0.7">Pequeno</span>
+        </button>
+        <button class="font-btn" data-size="medium" onclick="applyFontSize('medium')"
+          style="flex:1;padding:0.6rem;border:1px solid var(--border);border-radius:var(--r);background:var(--bg3);color:var(--muted);font-family:inherit;font-size:0.9rem;cursor:pointer;transition:all 0.15s;">
+          A<br><span style="font-size:0.65rem;opacity:0.7">Médio</span>
+        </button>
+        <button class="font-btn" data-size="large" onclick="applyFontSize('large')"
+          style="flex:1;padding:0.6rem;border:1px solid var(--border);border-radius:var(--r);background:var(--bg3);color:var(--muted);font-family:inherit;font-size:1.1rem;cursor:pointer;transition:all 0.15s;">
+          A<br><span style="font-size:0.65rem;opacity:0.7">Grande</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Density -->
+    <div>
+      <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);margin-bottom:0.75rem;">Densidade da Tabela</div>
+      <div style="display:flex;gap:0.5rem;">
+        <button class="den-btn" data-den="compact" onclick="applyDensity('compact')"
+          style="flex:1;padding:0.6rem;border:1px solid var(--border);border-radius:var(--r);background:var(--bg3);color:var(--muted);font-family:inherit;font-size:0.82rem;cursor:pointer;transition:all 0.15s;">
+          ▤<br><span style="font-size:0.65rem;opacity:0.7">Compacta</span>
+        </button>
+        <button class="den-btn" data-den="normal" onclick="applyDensity('normal')"
+          style="flex:1;padding:0.6rem;border:1px solid var(--border);border-radius:var(--r);background:var(--bg3);color:var(--muted);font-family:inherit;font-size:0.82rem;cursor:pointer;transition:all 0.15s;">
+          ▦<br><span style="font-size:0.65rem;opacity:0.7">Normal</span>
+        </button>
+        <button class="den-btn" data-den="comfortable" onclick="applyDensity('comfortable')"
+          style="flex:1;padding:0.6rem;border:1px solid var(--border);border-radius:var(--r);background:var(--bg3);color:var(--muted);font-family:inherit;font-size:0.82rem;cursor:pointer;transition:all 0.15s;">
+          ▭<br><span style="font-size:0.65rem;opacity:0.7">Espaçada</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Tema de cores -->
   <div class="form-card">
     <h2 style="margin-bottom:0.5rem;">🎨 Tema de Cores</h2>
-    <p style="font-size:0.8rem;color:var(--muted);margin-bottom:1.25rem;">Escolha a paleta de cores do aplicativo</p>
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:0.75rem;" id="themeGrid"></div>
+    <p style="font-size:0.8rem;color:var(--muted);margin-bottom:0.5rem;">Temas escuros sólidos</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:0.65rem;margin-bottom:1.25rem;" id="themeGrid"></div>
+    <p style="font-size:0.8rem;color:var(--muted);margin-bottom:0.5rem;">Temas com tabela 2 cores <span style="font-size:0.7rem;background:var(--blue3);color:var(--blue);border-radius:10px;padding:1px 8px;margin-left:4px;">NOVO</span></p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:0.65rem;" id="themeGridDual"></div>
   </div>
 </div>
 
@@ -2463,12 +2508,20 @@ function renderSimulados() {
 // CONFIGURAÇÕES
 // ═══════════════════════════════════
 const THEMES = [
-  { id:'dark-blue',  name:'Azul Escuro',   desc:'Padrão',       bg:'#080f1a', bg2:'#0d1825', accent:'#38b6ff', green:'#00e08a' },
-  { id:'dark-green', name:'Verde Escuro',  desc:'Floresta',     bg:'#061410', bg2:'#0a1f1a', accent:'#34d399', green:'#10b981' },
-  { id:'dark-purple',name:'Roxo Escuro',   desc:'Galáxia',      bg:'#0d0a1a', bg2:'#150f2a', accent:'#a78bfa', green:'#8b5cf6' },
-  { id:'dark-red',   name:'Vermelho',      desc:'Fogo',         bg:'#120808', bg2:'#1e0f0f', accent:'#f87171', green:'#ef4444' },
-  { id:'dark-gold',  name:'Dourado',       desc:'Premium',      bg:'#0f0c05', bg2:'#1a1608', accent:'#fbbf24', green:'#f59e0b' },
-  { id:'dark-slate', name:'Cinza Escuro',  desc:'Neutro',       bg:'#0a0c10', bg2:'#111318', accent:'#94a3b8', green:'#64748b' },
+  // ── Temas escuros sólidos ──
+  { id:'dark-blue',   name:'Azul Escuro',    desc:'Padrão',      bg:'#080f1a', bg2:'#0d1825', accent:'#38b6ff', green:'#00e08a', row1:'', row2:'' },
+  { id:'dark-green',  name:'Verde Escuro',   desc:'Floresta',    bg:'#061410', bg2:'#0a1f1a', accent:'#34d399', green:'#10b981', row1:'', row2:'' },
+  { id:'dark-purple', name:'Roxo Escuro',    desc:'Galáxia',     bg:'#0d0a1a', bg2:'#150f2a', accent:'#a78bfa', green:'#8b5cf6', row1:'', row2:'' },
+  { id:'dark-red',    name:'Vermelho',       desc:'Fogo',        bg:'#120808', bg2:'#1e0f0f', accent:'#f87171', green:'#ef4444', row1:'', row2:'' },
+  { id:'dark-gold',   name:'Dourado',        desc:'Premium',     bg:'#0f0c05', bg2:'#1a1608', accent:'#fbbf24', green:'#f59e0b', row1:'', row2:'' },
+  { id:'dark-slate',  name:'Cinza Escuro',   desc:'Neutro',      bg:'#0a0c10', bg2:'#111318', accent:'#94a3b8', green:'#64748b', row1:'', row2:'' },
+  { id:'dark-teal',   name:'Verde-Azulado',  desc:'Oceano',      bg:'#041418', bg2:'#072028', accent:'#2dd4bf', green:'#14b8a6', row1:'', row2:'' },
+  { id:'dark-rose',   name:'Rosa Escuro',    desc:'Rosa',        bg:'#140810', bg2:'#1f0f1a', accent:'#f472b6', green:'#ec4899', row1:'', row2:'' },
+  // ── Temas com tabela 2 cores ──
+  { id:'dual-blue',   name:'Dual Azul',      desc:'2 cores',     bg:'#080f1a', bg2:'#0d1825', accent:'#38b6ff', green:'#00e08a', row1:'rgba(56,182,255,0.04)', row2:'rgba(0,0,0,0)' },
+  { id:'dual-green',  name:'Dual Verde',     desc:'2 cores',     bg:'#061410', bg2:'#0a1f1a', accent:'#34d399', green:'#10b981', row1:'rgba(52,211,153,0.05)', row2:'rgba(0,0,0,0)' },
+  { id:'dual-purple', name:'Dual Roxo',      desc:'2 cores',     bg:'#0d0a1a', bg2:'#150f2a', accent:'#a78bfa', green:'#8b5cf6', row1:'rgba(167,139,250,0.05)', row2:'rgba(0,0,0,0)' },
+  { id:'dual-gold',   name:'Dual Dourado',   desc:'2 cores',     bg:'#0f0c05', bg2:'#1a1608', accent:'#fbbf24', green:'#f59e0b', row1:'rgba(251,191,36,0.05)', row2:'rgba(0,0,0,0)' },
 ];
 
 function applyTheme(t) {
@@ -2487,8 +2540,27 @@ function applyTheme(t) {
   r.setProperty('--green3', t.green + '1a');
   r.setProperty('--dim', shadeColor(t.bg2, 55));
   r.setProperty('--muted', shadeColor(t.accent, -30) + 'cc');
+  r.setProperty('--row1', t.row1 || '');
+  r.setProperty('--row2', t.row2 || '');
   localStorage.setItem('appTheme', t.id);
+  // Apply dual-color rows if set
+  applyTableRows(t.row1, t.row2);
   renderThemeGrid();
+}
+
+function applyTableRows(row1, row2) {
+  // Remove old style if exists
+  const old = document.getElementById('dualRowStyle');
+  if (old) old.remove();
+  if (!row1) return; // no dual color
+  const style = document.createElement('style');
+  style.id = 'dualRowStyle';
+  style.textContent = `
+    tbody tr:nth-child(odd) { background: ${row1} !important; }
+    tbody tr:nth-child(even) { background: ${row2} !important; }
+    tbody tr:hover { filter: brightness(1.15) !important; }
+  `;
+  document.head.appendChild(style);
 }
 
 function shadeColor(hex, pct) {
@@ -2504,21 +2576,74 @@ function shadeColor(hex, pct) {
 
 function renderThemeGrid() {
   const grid = document.getElementById('themeGrid');
+  const gridDual = document.getElementById('themeGridDual');
   if (!grid) return;
   const saved = localStorage.getItem('appTheme') || 'dark-blue';
-  grid.innerHTML = THEMES.map(t => {
+
+  const makeCard = (t) => {
     const active = t.id === saved;
-    return `<div onclick="applyTheme(${JSON.stringify(t).replace(/"/g,'&quot;')})" style="cursor:pointer;border:2px solid ${active ? t.green : 'rgba(255,255,255,0.08)'};border-radius:10px;overflow:hidden;transition:all 0.2s;${active?'box-shadow:0 0 14px '+t.green+'55':''}" onmouseover="this.style.borderColor='${t.green}'" onmouseout="this.style.borderColor='${active ? t.green : 'rgba(255,255,255,0.08)'}'">
-      <div style="height:52px;background:linear-gradient(135deg,${t.bg} 0%,${t.bg2} 50%,${shadeColor(t.bg2,15)} 100%);display:flex;align-items:center;justify-content:center;gap:5px;">
-        <div style="width:12px;height:12px;border-radius:50%;background:${t.green};box-shadow:0 0 6px ${t.green}"></div>
-        <div style="width:8px;height:8px;border-radius:50%;background:${t.accent};opacity:0.7"></div>
-      </div>
-      <div style="padding:0.5rem 0.65rem;background:${t.bg2};">
-        <div style="font-size:0.78rem;font-weight:700;color:${t.green}">${t.name}</div>
-        <div style="font-size:0.68rem;color:rgba(255,255,255,0.35)">${t.desc}${active?' · ativo':''}</div>
+    const isDual = !!t.row1;
+    const preview = isDual
+      ? `<div style="height:52px;background:${t.bg2};display:flex;flex-direction:column;justify-content:center;gap:3px;padding:4px 8px;">
+           <div style="height:8px;border-radius:2px;background:${t.row1 || 'rgba(255,255,255,0.05)'}"></div>
+           <div style="height:8px;border-radius:2px;background:${t.row2 || 'rgba(0,0,0,0)'}"></div>
+           <div style="height:8px;border-radius:2px;background:${t.row1 || 'rgba(255,255,255,0.05)'}"></div>
+         </div>`
+      : `<div style="height:52px;background:linear-gradient(135deg,${t.bg} 0%,${t.bg2} 50%,${shadeColor(t.bg2,15)} 100%);display:flex;align-items:center;justify-content:center;gap:5px;">
+           <div style="width:12px;height:12px;border-radius:50%;background:${t.green};box-shadow:0 0 6px ${t.green}"></div>
+           <div style="width:8px;height:8px;border-radius:50%;background:${t.accent};opacity:0.7"></div>
+         </div>`;
+    return `<div onclick="applyTheme(${JSON.stringify(t).replace(/"/g,'&quot;')})"
+      style="cursor:pointer;border:2px solid ${active ? t.green : 'rgba(255,255,255,0.08)'};border-radius:10px;overflow:hidden;transition:all 0.2s;${active?'box-shadow:0 0 14px '+t.green+'55':''}"
+      onmouseover="this.style.borderColor='${t.green}'" onmouseout="this.style.borderColor='${active ? t.green : 'rgba(255,255,255,0.08)'}'">
+      ${preview}
+      <div style="padding:0.45rem 0.65rem;background:${t.bg2};">
+        <div style="font-size:0.76rem;font-weight:700;color:${t.green}">${t.name}</div>
+        <div style="font-size:0.66rem;color:rgba(255,255,255,0.35)">${t.desc}${active?' · ativo':''}</div>
       </div>
     </div>`;
-  }).join('');
+  };
+
+  const solidThemes = THEMES.filter(t => !t.row1);
+  const dualThemes  = THEMES.filter(t => !!t.row1);
+
+  grid.innerHTML = solidThemes.map(makeCard).join('');
+  if(gridDual) gridDual.innerHTML = dualThemes.map(makeCard).join('');
+}
+
+function applyFontSize(size) {
+  const sizes = { small: '13px', medium: '15px', large: '17px' };
+  document.documentElement.style.fontSize = sizes[size] || '15px';
+  localStorage.setItem('fontSize', size);
+  // Update active button
+  document.querySelectorAll('.font-btn').forEach(b => {
+    const isActive = b.dataset.size === size;
+    b.style.borderColor = isActive ? 'var(--green)' : 'var(--border)';
+    b.style.color = isActive ? 'var(--green)' : 'var(--muted)';
+    b.style.background = isActive ? 'var(--green3)' : 'var(--bg3)';
+    b.style.fontWeight = isActive ? '700' : '400';
+  });
+}
+
+function applyDensity(density) {
+  const old = document.getElementById('densityStyle');
+  if(old) old.remove();
+  const style = document.createElement('style');
+  style.id = 'densityStyle';
+  if(density === 'compact') {
+    style.textContent = `tbody td { padding: 0.4rem 0.75rem !important; } thead th { padding: 0.4rem 0.75rem !important; } .stat-card { padding: 1rem 1.25rem !important; } .nav-item { padding: 0.45rem 1rem !important; }`;
+  } else if(density === 'comfortable') {
+    style.textContent = `tbody td { padding: 1rem 1.25rem !important; } thead th { padding: 0.9rem 1.25rem !important; } .stat-card { padding: 2rem !important; } .nav-item { padding: 0.85rem 1rem !important; }`;
+  }
+  if(density !== 'normal') document.head.appendChild(style);
+  localStorage.setItem('density', density);
+  document.querySelectorAll('.den-btn').forEach(b => {
+    const isActive = b.dataset.den === density;
+    b.style.borderColor = isActive ? 'var(--green)' : 'var(--border)';
+    b.style.color = isActive ? 'var(--green)' : 'var(--muted)';
+    b.style.background = isActive ? 'var(--green3)' : 'var(--bg3)';
+    b.style.fontWeight = isActive ? '700' : '400';
+  });
 }
 
 function renderConfig() {
@@ -2530,6 +2655,10 @@ function renderConfig() {
     if(el2) el2.textContent = currentUser.email;
   }
   renderThemeGrid();
+  // Restore active states
+  const fs = localStorage.getItem('fontSize') || 'medium';
+  const den = localStorage.getItem('density') || 'normal';
+  setTimeout(() => { applyFontSize(fs); applyDensity(den); }, 50);
 }
 
 function loadSavedTheme() {
@@ -2538,6 +2667,11 @@ function loadSavedTheme() {
     const t = THEMES.find(x => x.id === saved);
     if(t) applyTheme(t);
   }
+  // Apply font size and density
+  const fs = localStorage.getItem('fontSize') || 'medium';
+  const den = localStorage.getItem('density') || 'normal';
+  applyFontSize(fs);
+  applyDensity(den);
 }
 
 const MONTHS_PT = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
