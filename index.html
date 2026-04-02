@@ -215,7 +215,7 @@ tbody tr:hover{background:rgba(255,255,255,0.018);}
 .m-confirm:hover{background:var(--green2);}
 
 /* ── REGISTRAR PAGE ── */
-.reg-layout{display:grid;grid-template-columns:380px 1fr;gap:1.25rem;align-items:start;}
+.reg-layout{display:grid;grid-template-columns:520px 1fr;gap:1.25rem;align-items:start;}
 .form-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:1.5rem;box-shadow:0 2px 12px rgba(0,0,0,0.2);}
 .form-card h2{font-size:0.95rem;font-weight:700;margin-bottom:1.25rem;color:var(--text);}
 .field{margin-bottom:0.9rem;}
@@ -557,33 +557,33 @@ tbody tr:hover{background:rgba(255,255,255,0.018);}
   <div class="reg-layout">
     <div>
       <div class="form-card">
-        <h2>Adicionar ao cronograma</h2>
+        <h2 style="font-size:1.1rem;margin-bottom:1.5rem;">Adicionar ao cronograma</h2>
 
         <!-- PASSO 1: Grande Área -->
         <div class="field">
           <label style="display:flex;align-items:center;gap:6px;">
-            <span style="background:var(--green);color:#000;border-radius:50%;width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;font-size:0.65rem;font-weight:800;flex-shrink:0">1</span>
+            <span style="background:var(--green);color:#000;border-radius:50%;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:800;flex-shrink:0">1</span>
             Grande Área
           </label>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.4rem;margin-top:0.35rem;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;margin-top:0.5rem;">
             <button type="button" class="area-btn" onclick="selectArea(this,'Cirurgia Geral')" data-area="Cirurgia Geral"
-              style="padding:0.55rem;border:1px solid var(--border);border-radius:var(--r);background:var(--bg3);color:var(--muted);font-family:inherit;font-size:0.82rem;cursor:pointer;transition:all 0.15s;text-align:center;font-weight:500;">
+              style="padding:0.85rem;border:2px solid var(--border);border-radius:var(--r2);background:var(--bg3);color:var(--text);font-family:inherit;font-size:0.95rem;cursor:pointer;transition:all 0.18s;text-align:center;font-weight:600;">
               🔪 Cirurgia Geral
             </button>
             <button type="button" class="area-btn" onclick="selectArea(this,'Clínica Médica')" data-area="Clínica Médica"
-              style="padding:0.55rem;border:1px solid var(--border);border-radius:var(--r);background:var(--bg3);color:var(--muted);font-family:inherit;font-size:0.82rem;cursor:pointer;transition:all 0.15s;text-align:center;font-weight:500;">
+              style="padding:0.85rem;border:2px solid var(--border);border-radius:var(--r2);background:var(--bg3);color:var(--text);font-family:inherit;font-size:0.95rem;cursor:pointer;transition:all 0.18s;text-align:center;font-weight:600;">
               🩺 Clínica Médica
             </button>
             <button type="button" class="area-btn" onclick="selectArea(this,'Ginecologia e Obstetrícia')" data-area="Ginecologia e Obstetrícia"
-              style="padding:0.55rem;border:1px solid var(--border);border-radius:var(--r);background:var(--bg3);color:var(--muted);font-family:inherit;font-size:0.82rem;cursor:pointer;transition:all 0.15s;text-align:center;font-weight:500;">
+              style="padding:0.85rem;border:2px solid var(--border);border-radius:var(--r2);background:var(--bg3);color:var(--text);font-family:inherit;font-size:0.95rem;cursor:pointer;transition:all 0.18s;text-align:center;font-weight:600;">
               🤰 Ginecologia e Obstetrícia
             </button>
             <button type="button" class="area-btn" onclick="selectArea(this,'Pediatria')" data-area="Pediatria"
-              style="padding:0.55rem;border:1px solid var(--border);border-radius:var(--r);background:var(--bg3);color:var(--muted);font-family:inherit;font-size:0.82rem;cursor:pointer;transition:all 0.15s;text-align:center;font-weight:500;">
+              style="padding:0.85rem;border:2px solid var(--border);border-radius:var(--r2);background:var(--bg3);color:var(--text);font-family:inherit;font-size:0.95rem;cursor:pointer;transition:all 0.18s;text-align:center;font-weight:600;">
               👶 Pediatria
             </button>
             <button type="button" class="area-btn" onclick="selectArea(this,'Medicina Preventiva')" data-area="Medicina Preventiva"
-              style="padding:0.55rem;border:1px solid var(--border);border-radius:var(--r);background:var(--bg3);color:var(--muted);font-family:inherit;font-size:0.82rem;cursor:pointer;transition:all 0.15s;text-align:center;font-weight:500;grid-column:1/-1;">
+              style="padding:0.85rem;border:2px solid var(--border);border-radius:var(--r2);background:var(--bg3);color:var(--text);font-family:inherit;font-size:0.95rem;cursor:pointer;transition:all 0.18s;text-align:center;font-weight:600;grid-column:1/-1;">
               🛡️ Medicina Preventiva
             </button>
           </div>
@@ -591,7 +591,7 @@ tbody tr:hover{background:rgba(255,255,255,0.018);}
         </div>
 
         <!-- PASSO 2: Especialidade (aparece após escolher área) -->
-        <div class="field" id="specGrid" style="display:none;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:0.75rem;">
+        <div class="field" id="specGrid" style="display:none;background:var(--bg3);border:2px solid var(--green);border-radius:var(--r2);padding:1rem;">
           <!-- preenchido por renderSpecGrid() -->
         </div>
         <input type="hidden" id="regEspecialidade" value="">
@@ -599,11 +599,11 @@ tbody tr:hover{background:rgba(255,255,255,0.018);}
         <!-- PASSO 3: Nome do Tema -->
         <div class="field">
           <label style="display:flex;align-items:center;gap:6px;">
-            <span style="background:var(--green);color:#000;border-radius:50%;width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;font-size:0.65rem;font-weight:800;flex-shrink:0">2</span>
+            <span style="background:var(--green);color:#000;border-radius:50%;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:800;flex-shrink:0">2</span>
             Nome do Tema / Aula
           </label>
           <div class="ac-wrap">
-            <input type="text" id="regNome" placeholder="Ex: Pneumonia, AVC, Pré-Natal…" oninput="onRegNome()" autocomplete="off">
+            <input type="text" id="regNome" placeholder="Ex: Pneumonia, AVC, Pré-Natal…" oninput="onRegNome()" autocomplete="off" style="font-size:1rem;padding:0.65rem 0.85rem;">
             <div class="ac-list" id="acList" style="display:none"></div>
           </div>
         </div>
@@ -611,13 +611,13 @@ tbody tr:hover{background:rgba(255,255,255,0.018);}
         <!-- PASSO 4: Data -->
         <div class="field">
           <label style="display:flex;align-items:center;gap:6px;">
-            <span style="background:var(--green);color:#000;border-radius:50%;width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;font-size:0.65rem;font-weight:800;flex-shrink:0">3</span>
+            <span style="background:var(--green);color:#000;border-radius:50%;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:800;flex-shrink:0">3</span>
             Data que foi estudado
           </label>
-          <input type="date" id="regData" onchange="updatePreview()">
+          <input type="date" id="regData" onchange="updatePreview()" style="font-size:1rem;padding:0.65rem 0.85rem;">
         </div>
 
-        <button class="btn-add" onclick="addTema()">✓ Adicionar ao Cronograma</button>
+        <button class="btn-add" onclick="addTema()" style="font-size:1rem;padding:0.85rem;letter-spacing:0.02em;">✓ Adicionar ao Cronograma</button>
       </div>
 
       <!-- Categorizar temas existentes -->
@@ -631,16 +631,7 @@ tbody tr:hover{background:rgba(255,255,255,0.018);}
         <div id="catList" style="max-height:300px;overflow-y:auto;"></div>
       </div>
 
-      <div class="reg-list-card" id="regListCard" style="display:none">
-        <div class="reg-list-hdr">
-          <span style="font-size:0.82rem;font-weight:600" id="regListTitle">Adicionados nesta sessão</span>
-          <button class="btn-warn" onclick="clearReg()">Limpar</button>
-        </div>
-        <div style="overflow-x:auto">
-          <table><thead><tr><th>Tema</th><th>Data Estudo</th><th>R1</th><th>R2</th><th>R3</th><th></th></tr></thead>
-          <tbody id="regListBody"></tbody></table>
-        </div>
-      </div>
+      
     </div>
 
     <div class="preview-card" id="prevCard">
@@ -1845,7 +1836,8 @@ function selectArea(btn, area) {
     btn.style.borderColor = 'var(--green)';
     btn.style.color = 'var(--green)';
     btn.style.background = 'var(--green3)';
-    btn.style.fontWeight = '700';
+    btn.style.fontWeight = '800';
+    btn.style.boxShadow = '0 0 12px rgba(0,224,138,0.2)';
     document.getElementById('regArea').value = area;
     document.getElementById('regEspecialidade').value = '';
     renderSpecGrid(area);
@@ -1872,9 +1864,9 @@ function renderSpecGrid(area) {
 function selectSpec(btn, spec) {
   document.querySelectorAll('.spec-btn').forEach(b => {
     b.style.borderColor = 'var(--border)';
-    b.style.color = 'var(--muted)';
-    b.style.background = 'var(--bg3)';
-    b.style.fontWeight = '400';
+    b.style.color = 'var(--text)';
+    b.style.background = 'var(--bg2)';
+    b.style.fontWeight = '600';
   });
   const current = document.getElementById('regEspecialidade').value;
   if (current === spec) {
@@ -1883,7 +1875,8 @@ function selectSpec(btn, spec) {
     btn.style.borderColor = 'var(--blue)';
     btn.style.color = 'var(--blue)';
     btn.style.background = 'var(--blue3)';
-    btn.style.fontWeight = '700';
+    btn.style.fontWeight = '800';
+    btn.style.boxShadow = '0 0 10px rgba(56,182,255,0.2)';
     document.getElementById('regEspecialidade').value = spec;
   }
 }
