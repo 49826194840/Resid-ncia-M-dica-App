@@ -393,12 +393,19 @@ tbody tr:hover{background:rgba(255,255,255,0.018);}
 
 <!-- ═══ HOME ═══ -->
 <div class="page active" id="page-home">
-  <div class="stat-row" style="grid-template-columns:repeat(4,1fr)">
+  <div class="stat-row" style="grid-template-columns:repeat(5,1fr)">
     <div class="stat-card blue clickable" onclick="showQuickFilter('hoje')" title="Clique para ver os temas de hoje">
       <div class="stat-lbl">Revisões Hoje</div>
       <div class="stat-val" id="s-hoje">0</div>
       <div class="stat-sub">Clique para ver →</div>
       <div class="stat-arr">›</div>
+    </div>
+    <div class="stat-card clickable" onclick="showQuickFilter('amanha')" title="Revisões agendadas para amanhã"
+      style="border-color:rgba(139,92,246,0.25);background:linear-gradient(135deg,var(--bg2),rgba(139,92,246,0.07));border-top:3px solid #8b5cf6;">
+      <div class="stat-lbl" style="color:#a78bfa">Amanhã</div>
+      <div class="stat-val" id="s-amanha" style="color:#a78bfa">0</div>
+      <div class="stat-sub">prepare-se →</div>
+      <div class="stat-arr" style="color:#a78bfa">›</div>
     </div>
     <div class="stat-card red clickable" onclick="showQuickFilter('atrasado')" title="Revisões atrasadas (não inclui hoje)">
       <div class="stat-lbl">Atrasadas</div>
@@ -406,10 +413,10 @@ tbody tr:hover{background:rgba(255,255,255,0.018);}
       <div class="stat-sub">Excluindo hoje →</div>
       <div class="stat-arr">›</div>
     </div>
-    <div class="stat-card clickable" onclick="showQuickFilter('futuro')" title="Próximas revisões agendadas" style="border-color:rgba(255,201,71,0.25);background:linear-gradient(135deg,var(--bg2),rgba(255,201,71,0.05));">
+    <div class="stat-card clickable" onclick="showQuickFilter('futuro')" title="Próximas revisões agendadas" style="border-color:rgba(255,201,71,0.25);background:linear-gradient(135deg,var(--bg2),rgba(255,201,71,0.05));border-top:3px solid var(--gold);">
       <div class="stat-lbl">Revisões Futuras</div>
       <div class="stat-val" id="s-futuro" style="color:var(--gold)">0</div>
-      <div class="stat-sub">Agendadas — próximos dias →</div>
+      <div class="stat-sub">próximos dias →</div>
       <div class="stat-arr" style="color:var(--gold)">›</div>
     </div>
     <div class="stat-card green">
@@ -590,17 +597,23 @@ tbody tr:hover{background:rgba(255,255,255,0.018);}
           <input type="hidden" id="regArea" value="">
         </div>
 
-        <!-- PASSO 2: Especialidade (aparece após escolher área) -->
-        <div class="field" id="specGrid" style="display:none;background:var(--bg3);border:2px solid var(--green);border-radius:var(--r2);padding:1rem;">
-          <!-- preenchido por renderSpecGrid() -->
+        <!-- PASSO 2: Foco (aparece após escolher área) -->
+        <div class="field" style="display:none;" id="specFieldWrap">
+          <label style="display:flex;align-items:center;gap:6px;">
+            <span style="background:var(--green);color:#000;border-radius:50%;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:800;flex-shrink:0">2</span>
+            Foco
+          </label>
+          <div id="specGrid" style="background:var(--bg3);border:2px solid var(--green);border-radius:var(--r2);padding:1rem;margin-top:0.35rem;">
+            <!-- preenchido por renderSpecGrid() -->
+          </div>
         </div>
         <input type="hidden" id="regEspecialidade" value="">
 
         <!-- PASSO 3: Nome do Tema -->
         <div class="field">
           <label style="display:flex;align-items:center;gap:6px;">
-            <span style="background:var(--green);color:#000;border-radius:50%;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:800;flex-shrink:0">2</span>
-            Nome do Tema / Aula
+            <span style="background:var(--green);color:#000;border-radius:50%;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:800;flex-shrink:0">3</span>
+            Aula
           </label>
           <div class="ac-wrap">
             <input type="text" id="regNome" placeholder="Ex: Pneumonia, AVC, Pré-Natal…" oninput="onRegNome()" autocomplete="off" style="font-size:1rem;padding:0.65rem 0.85rem;">
@@ -611,7 +624,7 @@ tbody tr:hover{background:rgba(255,255,255,0.018);}
         <!-- PASSO 4: Data -->
         <div class="field">
           <label style="display:flex;align-items:center;gap:6px;">
-            <span style="background:var(--green);color:#000;border-radius:50%;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:800;flex-shrink:0">3</span>
+            <span style="background:var(--green);color:#000;border-radius:50%;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:800;flex-shrink:0">4</span>
             Data que foi estudado
           </label>
           <input type="date" id="regData" onchange="updatePreview()" style="font-size:1rem;padding:0.65rem 0.85rem;">
@@ -1246,7 +1259,12 @@ function renderHome() {
   const atras = temas.filter(t=>temaStatus(t)==='atrasado').length;
   let cFuturo = 0;
   temas.forEach(t => getRevList(t).forEach(e => { if (!e.mk && e.d > TODAY) cFuturo++; }));
+  const AMANHA = addDays(TODAY, 1);
+  const amanha = temas.filter(t =>
+    getRevList(t).some(e => !e.mk && isSame(e.d, AMANHA))
+  ).length;
   document.getElementById('s-hoje').textContent    = hoje;
+  document.getElementById('s-amanha').textContent  = amanha;
   document.getElementById('s-atrasado').textContent = atras;
   document.getElementById('s-futuro').textContent  = cFuturo;
   document.getElementById('s-total').textContent   = temas.length;
@@ -1293,6 +1311,37 @@ function showQuickFilter(tipo) {
   const panel = document.getElementById('quickPanel');
   const dot = document.getElementById('qpDot');
   const tb = document.getElementById('quickBody');
+
+  if (tipo === 'amanha') {
+    const AMANHA = addDays(TODAY, 1);
+    const amanhaDate = iso(AMANHA);
+    const rows = [];
+    allTemas().forEach(t => {
+      getRevList(t).forEach(e => {
+        if (!e.mk && isSame(e.d, AMANHA)) rows.push({tema: t, rev: e});
+      });
+    });
+    document.getElementById('qpTitle').textContent = `Revisões de Amanhã — ${fmtBRY(amanhaDate)} (${rows.length})`;
+    dot.style.background = '#8b5cf6';
+    dot.style.boxShadow = '0 0 6px #8b5cf6';
+    if (!rows.length) {
+      tb.innerHTML = '<tr><td colspan="5"><div class="empty-row">Nenhuma revisão para amanhã 🎉</div></td></tr>';
+    } else {
+      tb.innerHTML = rows.map((row, i) => {
+        const REV_LABELS_S = {R1:'Pós Aula',R2:'2ª Rev.',R3:'3ª Rev.',R4:'4ª Rev.',R5:'5ª Rev.',R6:'6ª Rev.',R7:'7ª Rev.'};
+        return `<tr>
+          <td class="rnum">${i+1}</td>
+          <td><span class="subj-name" onclick='goDetail(${JSON.stringify(row.tema.conteudo)})'>${row.tema.conteudo}</span></td>
+          <td style="color:#a78bfa;font-size:0.85rem;font-weight:600">${REV_LABELS_S[row.rev.key]||row.rev.key}</td>
+          <td>${pctBar(row.tema.pct_tema, true)}</td>
+          <td><button class="act-btn" onclick='openModal(${JSON.stringify(row.tema.conteudo)},${JSON.stringify(row.rev.key)})'>✓ Marcar</button></td>
+        </tr>`;
+      }).join('');
+    }
+    panel.style.display = 'block';
+    panel.scrollIntoView({behavior:'smooth', block:'start'});
+    return;
+  }
 
   if (tipo === 'futuro') {
     // Collect all individual future pending revisions, sorted by date
@@ -1830,7 +1879,8 @@ function selectArea(btn, area) {
     // Deselect
     document.getElementById('regArea').value = '';
     document.getElementById('regEspecialidade').value = '';
-    document.getElementById('specGrid').style.display = 'none';
+    const sw = document.getElementById('specFieldWrap');
+    if(sw) sw.style.display = 'none';
   } else {
     // Select area
     btn.style.borderColor = 'var(--green)';
@@ -1847,7 +1897,9 @@ function selectArea(btn, area) {
 function renderSpecGrid(area) {
   const specs = SPECIALTY_MAP[area] || [];
   const grid = document.getElementById('specGrid');
-  if (!specs.length) { grid.style.display='none'; return; }
+  const wrap = document.getElementById('specFieldWrap');
+  if (!specs.length) { if(wrap) wrap.style.display='none'; return; }
+  if(wrap) wrap.style.display='block';
   grid.style.display = 'block';
   grid.innerHTML = `
     <div style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);margin-bottom:0.5rem;">Especialidade</div>
