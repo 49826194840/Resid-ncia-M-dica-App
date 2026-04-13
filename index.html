@@ -569,47 +569,28 @@ tbody tr:hover{background:rgba(255,255,255,0.018);}
     <div>
       <div class="form-card">
         <h2>Adicionar ao cronograma</h2>
+
+        <!-- PASSO 1: ÁREA -->
         <div class="field">
-          <label>Nome do Tema / Aula</label>
-          <div class="ac-wrap">
-            <input type="text" id="regNome" placeholder="Ex: Pneumonia, AVC, Pré-Natal…" oninput="onRegNome()" autocomplete="off">
-            <div class="ac-list" id="acList" style="display:none"></div>
-          </div>
-        </div>
-        <div class="field">
-          <label>Especialidade</label>
-          <div style="display:flex;gap:0.5rem;align-items:center;">
-            <div style="position:relative;flex:1;">
-              <input type="text" id="regEspecialidade" placeholder="Ex: Cardiologia, Obstetrícia, Trauma…" autocomplete="off"
-                oninput="filterEspSuggestions()" onfocus="filterEspSuggestions()" onblur="setTimeout(()=>document.getElementById('espSuggest').style.display='none',200)"
-                style="width:100%;">
-              <div id="espSuggest" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);z-index:50;max-height:160px;overflow-y:auto;"></div>
-            </div>
-            <button type="button" onclick="addCustomEspecialidade()"
-              style="flex-shrink:0;padding:0.45rem 0.75rem;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);color:var(--green);font-family:inherit;font-size:0.82rem;cursor:pointer;white-space:nowrap;transition:all 0.15s;"
-              onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor='var(--border)'">
-              + Adicionar especialidade
-            </button>
-          </div>
-          <div id="customEspList" style="display:flex;flex-wrap:wrap;gap:0.4rem;margin-top:0.4rem;"></div>
-        </div>
-        <div class="field">
-          <label>Área</label>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;margin-top:0.25rem;" id="areaGrid">
+          <label style="display:flex;align-items:center;gap:0.4rem;">
+            <span style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:var(--green);color:#000;font-size:0.7rem;font-weight:700;flex-shrink:0;">1</span>
+            Grande Área
+          </label>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;margin-top:0.35rem;" id="areaGrid">
             <button type="button" class="area-btn" onclick="selectArea(this,'Cirurgia Geral')" data-area="Cirurgia Geral"
-              style="padding:0.5rem 0.5rem;border:1px solid var(--border);border-radius:var(--r);background:var(--bg3);color:var(--muted);font-family:inherit;font-size:0.8rem;cursor:pointer;transition:all 0.15s;text-align:center;">
+              style="padding:0.5rem;border:1px solid var(--border);border-radius:var(--r);background:var(--bg3);color:var(--muted);font-family:inherit;font-size:0.8rem;cursor:pointer;transition:all 0.15s;text-align:center;">
               🔪 Cirurgia Geral
             </button>
             <button type="button" class="area-btn" onclick="selectArea(this,'Clínica Médica')" data-area="Clínica Médica"
-              style="padding:0.5rem 0.5rem;border:1px solid var(--border);border-radius:var(--r);background:var(--bg3);color:var(--muted);font-family:inherit;font-size:0.8rem;cursor:pointer;transition:all 0.15s;text-align:center;">
+              style="padding:0.5rem;border:1px solid var(--border);border-radius:var(--r);background:var(--bg3);color:var(--muted);font-family:inherit;font-size:0.8rem;cursor:pointer;transition:all 0.15s;text-align:center;">
               🩺 Clínica Médica
             </button>
             <button type="button" class="area-btn" onclick="selectArea(this,'Pediatria')" data-area="Pediatria"
-              style="padding:0.5rem 0.5rem;border:1px solid var(--border);border-radius:var(--r);background:var(--bg3);color:var(--muted);font-family:inherit;font-size:0.8rem;cursor:pointer;transition:all 0.15s;text-align:center;">
+              style="padding:0.5rem;border:1px solid var(--border);border-radius:var(--r);background:var(--bg3);color:var(--muted);font-family:inherit;font-size:0.8rem;cursor:pointer;transition:all 0.15s;text-align:center;">
               👶 Pediatria
             </button>
             <button type="button" class="area-btn" onclick="selectArea(this,'Ginecologia e Obstetrícia')" data-area="Ginecologia e Obstetrícia"
-              style="padding:0.5rem 0.5rem;border:1px solid var(--border);border-radius:var(--r);background:var(--bg3);color:var(--muted);font-family:inherit;font-size:0.8rem;cursor:pointer;transition:all 0.15s;text-align:center;">
+              style="padding:0.5rem;border:1px solid var(--border);border-radius:var(--r);background:var(--bg3);color:var(--muted);font-family:inherit;font-size:0.8rem;cursor:pointer;transition:all 0.15s;text-align:center;">
               🤰 Ginecologia e Obstetrícia
             </button>
             <button type="button" class="area-btn" onclick="selectArea(this,'Medicina Preventiva')" data-area="Medicina Preventiva"
@@ -619,11 +600,48 @@ tbody tr:hover{background:rgba(255,255,255,0.018);}
           </div>
           <input type="hidden" id="regArea" value="">
         </div>
-        <div class="field">
-          <label>Data que foi estudado</label>
-          <input type="date" id="regData" onchange="updatePreview()">
+
+        <!-- PASSO 2: ESPECIALIDADE (aparece após selecionar área) -->
+        <div class="field" id="stepEspecialidade" style="display:none;">
+          <label style="display:flex;align-items:center;gap:0.4rem;">
+            <span style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:var(--green);color:#000;font-size:0.7rem;font-weight:700;flex-shrink:0;">2</span>
+            Especialidade
+          </label>
+          <div style="display:flex;flex-wrap:wrap;gap:0.4rem;margin-top:0.35rem;" id="espGrid"></div>
+          <!-- Adicionar especialidade custom -->
+          <div style="display:flex;gap:0.5rem;align-items:center;margin-top:0.5rem;">
+            <input type="text" id="newEspInput" placeholder="Nova especialidade…" autocomplete="off"
+              style="flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:0.4rem 0.75rem;color:var(--text);font-family:inherit;font-size:0.82rem;outline:none;"
+              onfocus="this.style.borderColor='var(--green)'" onblur="this.style.borderColor='var(--border)'"
+              onkeydown="if(event.key==='Enter')addCustomEspecialidade()">
+            <button type="button" onclick="addCustomEspecialidade()"
+              style="flex-shrink:0;padding:0.4rem 0.7rem;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);color:var(--green);font-family:inherit;font-size:0.8rem;cursor:pointer;white-space:nowrap;transition:all 0.15s;"
+              onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor='var(--border)'">
+              + Adicionar
+            </button>
+          </div>
+          <input type="hidden" id="regEspecialidade" value="">
         </div>
-        <button class="btn-add" onclick="addTema()">✓ Adicionar ao Cronograma</button>
+
+        <!-- PASSO 3: NOME DA AULA + DATA (aparece após selecionar especialidade) -->
+        <div id="stepAula" style="display:none;">
+          <div class="field">
+            <label style="display:flex;align-items:center;gap:0.4rem;">
+              <span style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:var(--green);color:#000;font-size:0.7rem;font-weight:700;flex-shrink:0;">3</span>
+              Nome da Aula
+            </label>
+            <div class="ac-wrap">
+              <input type="text" id="regNome" placeholder="Ex: Pneumonia, AVC, Pré-Natal…" oninput="onRegNome()" autocomplete="off">
+              <div class="ac-list" id="acList" style="display:none"></div>
+            </div>
+          </div>
+          <div class="field">
+            <label>Data que foi estudado</label>
+            <input type="date" id="regData" onchange="updatePreview()">
+          </div>
+          <button class="btn-add" onclick="addTema()">✓ Adicionar ao Cronograma</button>
+        </div>
+
       </div>
 
       <div class="reg-list-card" id="regListCard" style="display:none">
@@ -1210,7 +1228,7 @@ function goPage(id, el) {
   if(id==='home') renderHome();
   if(id==='calendar') renderCal();
   if(id==='temas') { setTemasView(temasViewMode || 'tree'); }
-  if(id==='registrar') { renderRegList(); renderCustomEspList(); }
+  if(id==='registrar') { renderRegList(); }
   if(id==='foco') renderFoco();
   if(id==='analise') renderAnalise();
   if(id==='simulado') renderSimulados();
@@ -1362,52 +1380,24 @@ const SPECIALTY_MAP = {
   'Pediatria': ['Alergologia e Imunologia','Cardiologia','Gastroenterologia','Genética','Infectologia','Neonatologia','Neurologia','Nutrologia','Otorrinolaringologia','Pediatria','Pneumologia','Puericultura','Terapia Intensiva']
 };
 function addCustomEspecialidade() {
-  const val = document.getElementById('regEspecialidade').value.trim();
+  const inp = document.getElementById('newEspInput');
+  const val = inp.value.trim();
+  const area = document.getElementById('regArea').value;
   if (!val) { toast('Digite o nome da especialidade!', 'err'); return; }
-  if (customEspecialidades.includes(val)) { toast('Especialidade já existe!', 'err'); return; }
-  customEspecialidades.push(val);
+  if (!area) { toast('Selecione uma área primeiro!', 'err'); return; }
+  const exists = customEspecialidades.some(e => e.nome === val && e.area === area);
+  if (exists) { toast('Especialidade já existe nessa área!', 'err'); return; }
+  customEspecialidades.push({ nome: val, area });
   save();
-  renderCustomEspList();
-  toast(`✓ "${val}" salva nas especialidades!`, 'ok');
+  inp.value = '';
+  renderEspGrid(area);
+  toast(`✓ "${val}" adicionada em ${area}!`, 'ok');
 }
 
 function removeCustomEspecialidade(esp) {
-  customEspecialidades = customEspecialidades.filter(e => e !== esp);
+  customEspecialidades = customEspecialidades.filter(e => !(e.nome === esp.nome && e.area === esp.area));
   save();
-  renderCustomEspList();
-}
-
-function renderCustomEspList() {
-  const el = document.getElementById('customEspList');
-  if (!el) return;
-  const allEsp = getAllEspecialidades();
-  el.innerHTML = customEspecialidades.map(e =>
-    `<span style="display:inline-flex;align-items:center;gap:4px;background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:2px 10px;font-size:0.73rem;color:var(--text);">
-      ${e}
-      <button onclick="removeCustomEspecialidade(${JSON.stringify(e)})" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:0.85rem;padding:0;line-height:1;">✕</button>
-    </span>`
-  ).join('');
-}
-
-function getAllEspecialidades() {
-  // Especialidades padrão do SPECIALTY_MAP + as custom
-  const builtin = Object.values(SPECIALTY_MAP || {}).flat();
-  return [...new Set([...builtin, ...customEspecialidades])].sort();
-}
-
-function filterEspSuggestions() {
-  const inp = document.getElementById('regEspecialidade');
-  const box = document.getElementById('espSuggest');
-  const q = inp.value.toLowerCase();
-  const all = getAllEspecialidades();
-  const filtered = q ? all.filter(e => e.toLowerCase().includes(q)) : all;
-  if (!filtered.length) { box.style.display = 'none'; return; }
-  box.style.display = 'block';
-  box.innerHTML = filtered.slice(0,10).map(e =>
-    `<div onclick="document.getElementById('regEspecialidade').value=${JSON.stringify(e)};document.getElementById('espSuggest').style.display='none';"
-      style="padding:0.4rem 0.75rem;cursor:pointer;font-size:0.82rem;color:var(--text);transition:background 0.1s;"
-      onmouseover="this.style.background='var(--bg4,var(--bg3))'" onmouseout="this.style.background='none'">${e}</div>`
-  ).join('');
+  renderEspGrid(esp.area);
 }
 
 // ═══════════════════════════════════
@@ -1953,21 +1943,67 @@ function updatePreview() {
 }
 
 function selectArea(btn, area) {
-  // Toggle selection
+  const current = document.getElementById('regArea').value;
+  // Deselect all
   document.querySelectorAll('.area-btn').forEach(b => {
     b.style.borderColor = 'var(--border)';
     b.style.color = 'var(--muted)';
     b.style.background = 'var(--bg3)';
     b.style.fontWeight = '400';
   });
-  if (document.getElementById('regArea').value === area) {
+  if (current === area) {
+    // Toggle off — esconde passos 2 e 3
     document.getElementById('regArea').value = '';
+    document.getElementById('regEspecialidade').value = '';
+    document.getElementById('stepEspecialidade').style.display = 'none';
+    document.getElementById('stepAula').style.display = 'none';
   } else {
     btn.style.borderColor = 'var(--green)';
     btn.style.color = 'var(--green)';
     btn.style.background = 'var(--green3)';
     btn.style.fontWeight = '700';
     document.getElementById('regArea').value = area;
+    document.getElementById('regEspecialidade').value = '';
+    document.getElementById('stepAula').style.display = 'none';
+    renderEspGrid(area);
+    document.getElementById('stepEspecialidade').style.display = 'block';
+  }
+}
+
+function renderEspGrid(area) {
+  const builtinEsps = SPECIALTY_MAP[area] || [];
+  // Especialidades custom que pertencem a essa área (salvas com a área)
+  const customForArea = customEspecialidades.filter(e => e.area === area).map(e => e.nome);
+  const all = [...builtinEsps, ...customForArea];
+  const grid = document.getElementById('espGrid');
+  grid.innerHTML = all.map(esp =>
+    `<button type="button" class="esp-btn" onclick="selectEsp(this, ${JSON.stringify(esp)})"
+      style="padding:0.35rem 0.75rem;border:1px solid var(--border);border-radius:20px;background:var(--bg3);color:var(--muted);font-family:inherit;font-size:0.78rem;cursor:pointer;transition:all 0.15s;">
+      ${esp}
+    </button>`
+  ).join('');
+}
+
+function selectEsp(btn, esp) {
+  document.querySelectorAll('.esp-btn').forEach(b => {
+    b.style.borderColor = 'var(--border)';
+    b.style.color = 'var(--muted)';
+    b.style.background = 'var(--bg3)';
+    b.style.fontWeight = '400';
+  });
+  const current = document.getElementById('regEspecialidade').value;
+  if (current === esp) {
+    document.getElementById('regEspecialidade').value = '';
+    document.getElementById('stepAula').style.display = 'none';
+  } else {
+    btn.style.borderColor = 'var(--green)';
+    btn.style.color = 'var(--green)';
+    btn.style.background = 'var(--green3)';
+    btn.style.fontWeight = '600';
+    document.getElementById('regEspecialidade').value = esp;
+    document.getElementById('stepAula').style.display = 'block';
+    // Scroll suave para o passo 3
+    setTimeout(() => document.getElementById('stepAula').scrollIntoView({behavior:'smooth', block:'nearest'}), 50);
   }
 }
 
@@ -1986,13 +2022,16 @@ function addTema() {
     pct_tema:'', pct_pa:'', pct_r1:'', pct_r2:'', pct_r3:'', pct_r4:'', pct_r5:'', pct_r6:''
   });
   save();
+  // Reset form — volta ao passo 1
   document.getElementById('regNome').value='';
-  document.getElementById('regEspecialidade').value='';
   document.getElementById('regArea').value='';
+  document.getElementById('regEspecialidade').value='';
   document.querySelectorAll('.area-btn').forEach(b => {
     b.style.borderColor='var(--border)';b.style.color='var(--muted)';
     b.style.background='var(--bg3)';b.style.fontWeight='400';
   });
+  document.getElementById('stepEspecialidade').style.display='none';
+  document.getElementById('stepAula').style.display='none';
   document.getElementById('regData').value=iso(TODAY);
   document.getElementById('prevRows').innerHTML='';
   document.getElementById('prevTitle').textContent='Selecione tema e data para ver o cronograma';
