@@ -488,13 +488,24 @@ tbody tr:hover{background:rgba(255,255,255,0.018);}
     <div class="sec-title"><div class="sec-title-dot"></div> Todos os Temas Estudados</div>
   </div>
   <div class="tbl-wrap">
-    <div class="tbl-search">
-      <input type="text" id="temasSearch" placeholder="Buscar tema…" oninput="renderTemas()">
+    <div class="tbl-search" style="display:flex;gap:0.5rem;align-items:center;">
+      <input type="text" id="temasSearch" placeholder="Buscar tema…" oninput="renderTemas()" style="flex:1;">
+      <button id="btnTreeView" onclick="setTemasView('tree')"
+        style="padding:0.3rem 0.75rem;border-radius:var(--r);font-family:inherit;font-size:0.78rem;cursor:pointer;border:1px solid var(--border);background:var(--bg3);color:var(--muted);transition:all 0.15s;">
+        🌳 Por Área
+      </button>
+      <button id="btnListView" onclick="setTemasView('list')"
+        style="padding:0.3rem 0.75rem;border-radius:var(--r);font-family:inherit;font-size:0.78rem;cursor:pointer;border:1px solid var(--border);background:var(--bg3);color:var(--muted);transition:all 0.15s;">
+        📋 Lista
+      </button>
     </div>
-    <div style="overflow-x:auto">
+    <!-- Visão Árvore -->
+    <div id="temasTree" style="display:none;margin-top:0.5rem;"></div>
+    <!-- Visão Lista -->
+    <div id="temasListWrap" style="overflow-x:auto;display:none;">
       <table style="min-width:700px">
         <thead><tr>
-          <th>#</th><th>Tema</th><th>Data Estudo</th><th>% Geral</th><th>Rev. Feitas</th><th>Próx. Revisão</th><th>Detalhes</th>
+          <th>#</th><th>Tema</th><th>Área</th><th>Data Estudo</th><th>% Geral</th><th>Rev. Feitas</th><th>Próx. Revisão</th><th>Detalhes</th>
         </tr></thead>
         <tbody id="temasBody"></tbody>
       </table>
@@ -567,7 +578,20 @@ tbody tr:hover{background:rgba(255,255,255,0.018);}
         </div>
         <div class="field">
           <label>Especialidade</label>
-          <input type="text" id="regEspecialidade" placeholder="Ex: Cardiologia, Obstetrícia, Trauma…" autocomplete="off">
+          <div style="display:flex;gap:0.5rem;align-items:center;">
+            <div style="position:relative;flex:1;">
+              <input type="text" id="regEspecialidade" placeholder="Ex: Cardiologia, Obstetrícia, Trauma…" autocomplete="off"
+                oninput="filterEspSuggestions()" onfocus="filterEspSuggestions()" onblur="setTimeout(()=>document.getElementById('espSuggest').style.display='none',200)"
+                style="width:100%;">
+              <div id="espSuggest" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);z-index:50;max-height:160px;overflow-y:auto;"></div>
+            </div>
+            <button type="button" onclick="addCustomEspecialidade()"
+              style="flex-shrink:0;padding:0.45rem 0.75rem;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);color:var(--green);font-family:inherit;font-size:0.82rem;cursor:pointer;white-space:nowrap;transition:all 0.15s;"
+              onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor='var(--border)'">
+              + Adicionar especialidade
+            </button>
+          </div>
+          <div id="customEspList" style="display:flex;flex-wrap:wrap;gap:0.4rem;margin-top:0.4rem;"></div>
         </div>
         <div class="field">
           <label>Área</label>
@@ -973,6 +997,7 @@ const BASE_PCT_MAP = { R1:'pct_pa', R2:'pct_r1', R3:'pct_r2', R4:'pct_r3', R5:'p
 const TODAY = new Date(); TODAY.setHours(0,0,0,0);
 let marked   = {};
 let regExtra = [];
+let customEspecialidades = [];
 let pendMark = null;
 let prevPage = 'home';
 let calYear  = TODAY.getFullYear();
@@ -999,6 +1024,7 @@ async function loadFromSupabase() {
     if (data && data.data) {
       marked   = data.data.marked   || {};
       regExtra = data.data.regExtra || [];
+      customEspecialidades = data.data.customEspecialidades || [];
     }
   } catch(e) { console.error('Load error:', e); }
 }
@@ -1011,7 +1037,7 @@ async function _doSave() {
   try {
     const { error } = await window._sb.from('user_data').upsert({
       user_id: currentUser.id,
-      data: { marked, regExtra },
+      data: { marked, regExtra, customEspecialidades },
       updated_at: new Date().toISOString()
     }, { onConflict: 'user_id' });
     if (error) {
@@ -1106,7 +1132,7 @@ function temaStatus(tema) {
   // "atrasado" se houver revisões passadas não marcadas, independente de ter futuras agendadas
   if (hasAtrasado) return 'atrasado';
   if (allDone) return 'done';
-  return 'ok'; // só revisões futuras pendentes
+  return 'ok';
 }
 
 function nextPendingRev(tema) {
@@ -1183,8 +1209,8 @@ function goPage(id, el) {
   }
   if(id==='home') renderHome();
   if(id==='calendar') renderCal();
-  if(id==='temas') renderTemas();
-  if(id==='registrar') renderRegList();
+  if(id==='temas') { setTemasView(temasViewMode || 'tree'); }
+  if(id==='registrar') { renderRegList(); renderCustomEspList(); }
   if(id==='foco') renderFoco();
   if(id==='analise') renderAnalise();
   if(id==='simulado') renderSimulados();
@@ -1326,20 +1352,123 @@ function showQuickFilter(tipo) {
 }
 
 // ═══════════════════════════════════
+// ESPECIALIDADES CUSTOMIZADAS
+// ═══════════════════════════════════
+const SPECIALTY_MAP = {
+  'Cirurgia Geral': ['Cirurgia do Aparelho Digestivo','Cirurgia Geral','Cirurgia Pediátrica','Cirurgia Vascular','Dermatologia','Gastroenterologia','Hepatologia','Ortopedia','Trauma','Urologia'],
+  'Clínica Médica': ['Cardiologia','Dermatologia','Endocrinologia','Geriatria','Hepatologia','Infectologia','Nefrologia','Neurologia','Onco e Hematologia','Pneumologia','Psiquiatria','Reumatologia','Terapia Intensiva','Toxicologia e Farmacologia'],
+  'Medicina Preventiva': ['Atuação Médica','Epidemiologia','Medidas de Saúde Coletiva','Promoção e Prevenção da Saúde','SUS','Testes Diagnósticos','Vigilância em Saúde'],
+  'Ginecologia e Obstetrícia': ['Acompanhamento Gestacional','Colo Uterino','Corpo Uterino','Doenças Clínicas na Gestação','Ginecologia Endócrina','Ginecologia Geral','Infecções do Trato Genital Feminino','Infertilidade','Mama','Medicina Fetal','Ovários','Parto','Prematuridade na Obstetrícia','Puerpério','Sangramentos na Gestação','Sexualidade Feminina','Sofrimento Fetal','SUA','Uroginecologia','Vulva e Vagina','Úlceras Genitais'],
+  'Pediatria': ['Alergologia e Imunologia','Cardiologia','Gastroenterologia','Genética','Infectologia','Neonatologia','Neurologia','Nutrologia','Otorrinolaringologia','Pediatria','Pneumologia','Puericultura','Terapia Intensiva']
+};
+function addCustomEspecialidade() {
+  const val = document.getElementById('regEspecialidade').value.trim();
+  if (!val) { toast('Digite o nome da especialidade!', 'err'); return; }
+  if (customEspecialidades.includes(val)) { toast('Especialidade já existe!', 'err'); return; }
+  customEspecialidades.push(val);
+  save();
+  renderCustomEspList();
+  toast(`✓ "${val}" salva nas especialidades!`, 'ok');
+}
+
+function removeCustomEspecialidade(esp) {
+  customEspecialidades = customEspecialidades.filter(e => e !== esp);
+  save();
+  renderCustomEspList();
+}
+
+function renderCustomEspList() {
+  const el = document.getElementById('customEspList');
+  if (!el) return;
+  const allEsp = getAllEspecialidades();
+  el.innerHTML = customEspecialidades.map(e =>
+    `<span style="display:inline-flex;align-items:center;gap:4px;background:var(--bg3);border:1px solid var(--border);border-radius:20px;padding:2px 10px;font-size:0.73rem;color:var(--text);">
+      ${e}
+      <button onclick="removeCustomEspecialidade(${JSON.stringify(e)})" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:0.85rem;padding:0;line-height:1;">✕</button>
+    </span>`
+  ).join('');
+}
+
+function getAllEspecialidades() {
+  // Especialidades padrão do SPECIALTY_MAP + as custom
+  const builtin = Object.values(SPECIALTY_MAP || {}).flat();
+  return [...new Set([...builtin, ...customEspecialidades])].sort();
+}
+
+function filterEspSuggestions() {
+  const inp = document.getElementById('regEspecialidade');
+  const box = document.getElementById('espSuggest');
+  const q = inp.value.toLowerCase();
+  const all = getAllEspecialidades();
+  const filtered = q ? all.filter(e => e.toLowerCase().includes(q)) : all;
+  if (!filtered.length) { box.style.display = 'none'; return; }
+  box.style.display = 'block';
+  box.innerHTML = filtered.slice(0,10).map(e =>
+    `<div onclick="document.getElementById('regEspecialidade').value=${JSON.stringify(e)};document.getElementById('espSuggest').style.display='none';"
+      style="padding:0.4rem 0.75rem;cursor:pointer;font-size:0.82rem;color:var(--text);transition:background 0.1s;"
+      onmouseover="this.style.background='var(--bg4,var(--bg3))'" onmouseout="this.style.background='none'">${e}</div>`
+  ).join('');
+}
+
+// ═══════════════════════════════════
 // TEMAS PAGE
 // ═══════════════════════════════════
+let temasViewMode = 'tree';
+
+function setTemasView(mode) {
+  temasViewMode = mode;
+  const btnTree = document.getElementById('btnTreeView');
+  const btnList = document.getElementById('btnListView');
+  const tree = document.getElementById('temasTree');
+  const list = document.getElementById('temasListWrap');
+  if (mode === 'tree') {
+    btnTree.style.background = 'var(--green3,rgba(0,224,138,0.12))';
+    btnTree.style.borderColor = 'var(--green)';
+    btnTree.style.color = 'var(--green)';
+    btnList.style.background = 'var(--bg3)';
+    btnList.style.borderColor = 'var(--border)';
+    btnList.style.color = 'var(--muted)';
+    tree.style.display = 'block';
+    list.style.display = 'none';
+  } else {
+    btnList.style.background = 'var(--green3,rgba(0,224,138,0.12))';
+    btnList.style.borderColor = 'var(--green)';
+    btnList.style.color = 'var(--green)';
+    btnTree.style.background = 'var(--bg3)';
+    btnTree.style.borderColor = 'var(--border)';
+    btnTree.style.color = 'var(--muted)';
+    tree.style.display = 'none';
+    list.style.display = 'block';
+  }
+  renderTemas();
+}
+
 function renderTemas() {
   const q = (document.getElementById('temasSearch').value||'').toLowerCase();
   const temas = allTemas().filter(t=>!q||t.conteudo.toLowerCase().includes(q));
+
+  // Inicializa botões se ainda não foram configurados
+  if (!document.getElementById('btnTreeView').style.color) setTemasView('tree');
+
+  if (temasViewMode === 'list') {
+    renderTemasLista(temas);
+  } else {
+    renderTemasArvore(temas);
+  }
+}
+
+function renderTemasLista(temas) {
   const tb = document.getElementById('temasBody');
-  if(!temas.length){tb.innerHTML='<tr><td colspan="7"><div class="empty-row">Nenhum tema.</div></td></tr>';return;}
-  tb.innerHTML = temas.map((t,i)=>{
+  if (!temas.length) { tb.innerHTML='<tr><td colspan="8"><div class="empty-row">Nenhum tema.</div></td></tr>'; return; }
+  tb.innerHTML = temas.map((t,i) => {
     const revs = getRevList(t);
     const done = revs.filter(e=>e.mk).length;
     const nr = nextPendingRev(t);
+    const areaLabel = t.area ? `<span style="font-size:0.65rem;background:var(--blue3);color:var(--blue);border:1px solid rgba(56,182,255,0.3);border-radius:10px;padding:1px 7px;margin-left:4px">${t.area}</span>` : '';
     return `<tr>
       <td class="rnum">${i+1}</td>
       <td><span class="subj-name" onclick='goDetail(${JSON.stringify(t.conteudo)})'>${t.conteudo}</span></td>
+      <td style="font-size:0.75rem">${areaLabel}${t.especialidade?`<span style="font-size:0.65rem;background:var(--bg3);color:var(--muted);border:1px solid var(--border);border-radius:10px;padding:1px 7px;margin-left:2px">${t.especialidade}</span>`:''}</td>
       <td style="color:var(--muted);font-size:0.78rem">${fmtBRY(t.data)}</td>
       <td>${pctBar(t.pct_tema)}</td>
       <td><span style="font-weight:600;color:var(--green)">${done}</span><span style="color:var(--dim)">/${revs.length}</span></td>
@@ -1347,6 +1476,90 @@ function renderTemas() {
       <td style="display:flex;gap:5px"><button class="act-btn detail" onclick='goDetail(${JSON.stringify(t.conteudo)})'>🔍 Ver</button><button onclick='deleteTema(${JSON.stringify(t.conteudo)})' style="background:none;border:1px solid rgba(255,83,112,0.3);color:var(--red);border-radius:var(--r);padding:0.22rem 0.5rem;font-size:0.72rem;cursor:pointer;" onmouseover="this.style.background='var(--red3)'" onmouseout="this.style.background='none'">🗑</button></td>
     </tr>`;
   }).join('');
+}
+
+function renderTemasArvore(temas) {
+  const el = document.getElementById('temasTree');
+  if (!temas.length) { el.innerHTML='<div class="empty-row">Nenhum tema.</div>'; return; }
+
+  // Agrupar por Grande Área → Especialidade/Foco → Temas
+  const grupos = {};
+  temas.forEach(t => {
+    const area = t.area || '(Sem Área)';
+    const esp  = t.especialidade || '(Sem Especialidade)';
+    if (!grupos[area]) grupos[area] = {};
+    if (!grupos[area][esp]) grupos[area][esp] = [];
+    grupos[area][esp].push(t);
+  });
+
+  const AREA_ICONS = {
+    'Cirurgia Geral':'🔪','Clínica Médica':'🩺','Pediatria':'👶',
+    'Ginecologia e Obstetrícia':'🤰','Medicina Preventiva':'🛡️'
+  };
+
+  let html = '';
+  Object.keys(grupos).sort().forEach(area => {
+    const areaId = 'area_' + area.replace(/\s/g,'_');
+    const icon = AREA_ICONS[area] || '📚';
+    const totalArea = Object.values(grupos[area]).flat().length;
+    html += `
+      <div style="margin-bottom:0.75rem;background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden;">
+        <div onclick="toggleTreeNode('${areaId}')" style="display:flex;align-items:center;gap:0.6rem;padding:0.75rem 1rem;cursor:pointer;user-select:none;background:var(--bg3);">
+          <span style="font-size:1rem">${icon}</span>
+          <span style="font-weight:700;color:var(--text);flex:1">${area}</span>
+          <span style="font-size:0.72rem;color:var(--muted);background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:1px 8px;">${totalArea} tema${totalArea!==1?'s':''}</span>
+          <span id="${areaId}_chevron" style="color:var(--muted);font-size:0.8rem;transition:transform 0.2s;">▼</span>
+        </div>
+        <div id="${areaId}" style="display:block;">`;
+
+    Object.keys(grupos[area]).sort().forEach(esp => {
+      const espId = (areaId + '_' + esp).replace(/\s/g,'_');
+      const temasList = grupos[area][esp];
+      html += `
+          <div style="border-top:1px solid var(--border);">
+            <div onclick="toggleTreeNode('${espId}')" style="display:flex;align-items:center;gap:0.5rem;padding:0.5rem 1rem 0.5rem 2rem;cursor:pointer;user-select:none;background:var(--bg2);">
+              <span style="color:var(--muted);font-size:0.85rem;">📁</span>
+              <span style="font-weight:600;color:var(--muted);font-size:0.85rem;flex:1">${esp}</span>
+              <span style="font-size:0.7rem;color:var(--dim)">${temasList.length} aula${temasList.length!==1?'s':''}</span>
+              <span id="${espId}_chevron" style="color:var(--dim);font-size:0.75rem;transition:transform 0.2s;">▼</span>
+            </div>
+            <div id="${espId}" style="display:block;">`;
+
+      temasList.forEach(t => {
+        const s = temaStatus(t);
+        const revs = getRevList(t);
+        const done = revs.filter(e=>e.mk).length;
+        const nr = nextPendingRev(t);
+        const dotCol = s==='hoje'?'var(--blue)':s==='atrasado'?'var(--red)':s==='done'?'var(--green)':'var(--dim)';
+        const nxtStr = nr ? fmtBRY(nr.dateISO) : 'Todas ✓';
+        html += `
+              <div style="display:flex;align-items:center;gap:0.6rem;padding:0.4rem 1rem 0.4rem 3.2rem;border-top:1px solid rgba(255,255,255,0.04);">
+                <span style="width:7px;height:7px;border-radius:50%;background:${dotCol};flex-shrink:0;"></span>
+                <span class="subj-name" onclick='goDetail(${JSON.stringify(t.conteudo)})' style="flex:1;font-size:0.85rem;">${t.conteudo}</span>
+                ${pctBar(t.pct_tema)}
+                <span style="font-size:0.72rem;color:var(--dim);white-space:nowrap">${done}/${revs.length} rev</span>
+                <span style="font-size:0.72rem;color:var(--muted);white-space:nowrap">${nxtStr}</span>
+                <button class="act-btn detail" onclick='goDetail(${JSON.stringify(t.conteudo)})' style="font-size:0.7rem;padding:0.18rem 0.45rem;">🔍</button>
+                <button onclick='deleteTema(${JSON.stringify(t.conteudo)})' style="background:none;border:1px solid rgba(255,83,112,0.3);color:var(--red);border-radius:var(--r);padding:0.18rem 0.4rem;font-size:0.7rem;cursor:pointer;" onmouseover="this.style.background='var(--red3)'" onmouseout="this.style.background='none'">🗑</button>
+              </div>`;
+      });
+
+      html += `</div></div>`;
+    });
+
+    html += `</div></div>`;
+  });
+
+  el.innerHTML = html;
+}
+
+function toggleTreeNode(id) {
+  const el = document.getElementById(id);
+  const ch = document.getElementById(id + '_chevron');
+  if (!el) return;
+  const open = el.style.display !== 'none';
+  el.style.display = open ? 'none' : 'block';
+  if (ch) ch.style.transform = open ? 'rotate(-90deg)' : '';
 }
 
 // ═══════════════════════════════════
@@ -2788,6 +3001,7 @@ async function importBackup(event) {
 
     marked   = backup.marked   || {};
     regExtra = backup.regExtra || [];
+    customEspecialidades = backup.customEspecialidades || [];
 
     // Show saving indicator
     toast('Salvando no servidor...', 'ok');
@@ -2796,7 +3010,7 @@ async function importBackup(event) {
     clearTimeout(_saveTimer);
     const { error } = await window._sb.from('user_data').upsert({
       user_id: currentUser.id,
-      data: { marked, regExtra },
+      data: { marked, regExtra, customEspecialidades },
       updated_at: new Date().toISOString()
     }, { onConflict: 'user_id' });
 
@@ -2826,9 +3040,11 @@ async function initAuth() {
     showLoginScreen();
   }
   window._sb.auth.onAuthStateChange(async (event, session) => {
-    if (event === 'SIGNED_IN' && session) {
+    if (event === 'SIGNED_IN' && session && !currentUser) {
+      // Só inicia o app se ainda não estava logado (evita reload ao voltar à aba)
       await startApp(session.user);
     } else if (event === 'SIGNED_OUT') {
+      currentUser = null;
       showLoginScreen();
     }
   });
