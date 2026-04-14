@@ -1174,16 +1174,19 @@ function pctNum(s) {
 // ═══════════════════════════════════
 // RENDER UTILS
 // ═══════════════════════════════════
+function getPctColor(n) {
+  if (n >= 85) return '#00e08a';
+  if (n >= 80) return '#7be3b5';
+  if (n >= 75) return '#ffc947';
+  return '#ff5370';
+}
+
 function pctBar(v, compact=false) {
   if (!v) return '<span style="color:var(--dim)">—</span>';
   const n = pctNum(v);
   if (n===null) return '<span style="color:var(--dim)">—</span>';
-  // Nova escala: >=85% verde potente, 80-84.99% verde claro, 75-79.99% amarelo, <75% vermelho
-  let barColor, textColor;
-  if (n >= 85) { barColor = '#00e08a'; textColor = '#00e08a'; }
-  else if (n >= 80) { barColor = '#7be3b5'; textColor = '#7be3b5'; }
-  else if (n >= 75) { barColor = '#ffc947'; textColor = '#ffc947'; }
-  else { barColor = '#ff5370'; textColor = '#ff5370'; }
+  const barColor = getPctColor(n);
+  const textColor = barColor;
   const trackW = compact ? '40px' : '60px';
   return `<div class="pct-wrap" title="${v} de acertos">
     <div class="pct-track" style="min-width:${trackW}"><div class="pct-fill" style="width:${Math.min(n,100)}%;background:${barColor};transition:width 0.4s ease"></div></div>
@@ -2457,8 +2460,8 @@ function onGlobalSearch() {
       const dotCol = s==='hoje'?'var(--blue)':s==='atrasado'?'var(--red)':s==='done'?'var(--green)':'var(--dim)';
       const dotLbl = s==='hoje'?'Hoje':s==='atrasado'?'Atrasado':s==='done'?'Concluído':'Agendado';
       const pct = t.pct_tema || '';
-      const pctN = pct ? parseFloat(pct.replace(',','.')) : null;
-      const pctCol = pctN>=85?'#00e08a':pctN>=80?'#7be3b5':pctN>=75?'#ffc947':'#ff5370';
+      const pctN = pctNum(pct);
+      const pctCol = pctN !== null ? getPctColor(pctN) : '';
       return `<div onclick="globalSelectTema('${t.conteudo.replace(/'/g,"\'")}') " style="padding:0.65rem 1rem;cursor:pointer;border-bottom:1px solid rgba(28,48,72,0.3);display:flex;align-items:center;gap:10px;transition:background 0.1s;" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
         <div style="width:8px;height:8px;border-radius:50%;background:${dotCol};flex-shrink:0;box-shadow:0 0 4px ${dotCol}"></div>
         <span style="flex:1;font-size:0.86rem;font-weight:500">${t.conteudo}</span>
@@ -2491,7 +2494,7 @@ function toggleSection(sectionId, chevronId) {
   const sec = document.getElementById(sectionId);
   const chev = document.getElementById(chevronId);
   const isOpen = sec.style.display !== 'none';
-  sec.style.display = isOpen ? 'none' : (sectionId === 'retencaoSection' ? 'block' : 'block');
+  sec.style.display = isOpen ? 'none' : 'block';
   if (chev) chev.textContent = isOpen ? '▸' : '▾';
 }
 
@@ -2530,111 +2533,7 @@ function deleteTema(nome) {
     if (k.startsWith(nome + '::')) delete marked[k];
   });
 
-  // If it's a BASE tema, add to deleted list
-  const delList = JSON.parse(localStorage.getItem('deletedTemas7') || '[]');
-  if (!delList.includes(nome)) delList.push(nome);
-  localStorage.setItem('deletedTemas7', JSON.stringify(delList));
-
-  save();
-  toast(`✓ Tema "${nome}" excluído.`, 'ok');
-  renderHome();
-  renderTemas();
-  renderFoco();
-  renderAnalise();
-  if (document.getElementById('page-detalhe').classList.contains('active')) {
-    goPage('temas', null);
-  }
-}
-
-// ═══════════════════════════════════
-// BUSCA GLOBAL
-// ═══════════════════════════════════
-function onGlobalSearch() {
-  const q = (document.getElementById('globalSearch').value || '').toLowerCase().trim();
-  const resultsEl = document.getElementById('globalResults');
-  if (!q || q.length < 2) { resultsEl.style.display = 'none'; return; }
-  const temas = allTemas().filter(t => t.conteudo.toLowerCase().includes(q));
-  if (!temas.length) {
-    resultsEl.innerHTML = '<div style="padding:1rem;color:var(--dim);font-size:0.82rem;text-align:center">Nenhum tema encontrado</div>';
-  } else {
-    resultsEl.innerHTML = temas.map(t => {
-      const s = temaStatus(t);
-      const dotCol = s==='hoje'?'var(--blue)':s==='atrasado'?'var(--red)':s==='done'?'var(--green)':'var(--dim)';
-      const dotLbl = s==='hoje'?'Hoje':s==='atrasado'?'Atrasado':s==='done'?'Concluído':'Agendado';
-      const pct = t.pct_tema || '';
-      const pctN = pct ? parseFloat(pct.replace(',','.')) : null;
-      const pctCol = pctN>=85?'#00e08a':pctN>=80?'#7be3b5':pctN>=75?'#ffc947':'#ff5370';
-      return `<div onclick="globalSelectTema('${t.conteudo.replace(/'/g,"\'")}') " style="padding:0.65rem 1rem;cursor:pointer;border-bottom:1px solid rgba(28,48,72,0.3);display:flex;align-items:center;gap:10px;transition:background 0.1s;" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
-        <div style="width:8px;height:8px;border-radius:50%;background:${dotCol};flex-shrink:0;box-shadow:0 0 4px ${dotCol}"></div>
-        <span style="flex:1;font-size:0.86rem;font-weight:500">${t.conteudo}</span>
-        ${pct?`<span style="font-size:0.78rem;font-weight:700;color:${pctCol}">${pct}</span>`:''}
-      </div>`;
-    }).join('');
-  }
-  resultsEl.style.display = 'block';
-}
-
-function globalSelectTema(nome) {
-  document.getElementById('globalSearch').value = '';
-  document.getElementById('globalResults').style.display = 'none';
-  goDetail(nome);
-}
-
-function showGlobalResults() {
-  const q = (document.getElementById('globalSearch').value || '').trim();
-  if (q.length >= 2) onGlobalSearch();
-}
-
-function hideGlobalResults() {
-  document.getElementById('globalResults').style.display = 'none';
-}
-
-// ═══════════════════════════════════
-// COLLAPSIBLE SECTIONS
-// ═══════════════════════════════════
-function toggleSection(sectionId, chevronId) {
-  const sec = document.getElementById(sectionId);
-  const chev = document.getElementById(chevronId);
-  const isOpen = sec.style.display !== 'none';
-  sec.style.display = isOpen ? 'none' : (sectionId === 'retencaoSection' ? 'block' : 'block');
-  if (chev) chev.textContent = isOpen ? '▸' : '▾';
-}
-
-// ═══════════════════════════════════
-// WEAK POPUP TOGGLE
-// ═══════════════════════════════════
-function toggleWeakPopup() {
-  const popup = document.getElementById('weakPopup');
-  if (popup.style.display === 'flex') {
-    popup.style.display = 'none';
-  } else {
-    popup.style.display = 'flex';
-  }
-}
-document.addEventListener('click', e => {
-  const popup = document.getElementById('weakPopup');
-  if (popup && popup.style.display === 'flex' && e.target === popup) {
-    popup.style.display = 'none';
-  }
-});
-
-// ═══════════════════════════════════
-// DELETAR TEMA
-// ═══════════════════════════════════
-
-function deleteTema(nome) {
-  if (!confirm(`Tem certeza que deseja excluir o tema "${nome}"?\n\nEsta ação não pode ser desfeita.`)) return;
-
-  // Remove from regExtra if user-added
-  const idx = regExtra.findIndex(t => t.conteudo === nome);
-  if (idx !== -1) regExtra.splice(idx, 1);
-
-  // Remove all marks for this tema
-  Object.keys(marked).forEach(k => {
-    if (k.startsWith(nome + '::')) delete marked[k];
-  });
-
-  // Track deleted base temas
+  // Track deleted base temas (used by allTemas())
   if (!marked.__deletedTemas) marked.__deletedTemas = [];
   if (!marked.__deletedTemas.includes(nome)) marked.__deletedTemas.push(nome);
 
