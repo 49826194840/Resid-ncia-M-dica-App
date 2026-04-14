@@ -500,9 +500,9 @@ tbody tr:hover{background:rgba(255,255,255,0.018);}
     <div id="temasTree" style="display:none;margin-top:0.5rem;"></div>
     <!-- Visão Lista -->
     <div id="temasListWrap" style="overflow-x:auto;display:none;">
-      <table style="min-width:700px">
+      <table style="min-width:400px">
         <thead><tr>
-          <th>#</th><th>Tema</th><th>Área</th><th>Data Estudo</th><th>% Geral</th><th>Rev. Feitas</th><th>Próx. Revisão</th><th>Detalhes</th>
+          <th>Tema</th><th>Grande Área</th><th>Especialidade</th><th style="width:60px"></th>
         </tr></thead>
         <tbody id="temasBody"></tbody>
       </table>
@@ -1446,20 +1446,12 @@ function renderTemas() {
 
 function renderTemasLista(temas) {
   const tb = document.getElementById('temasBody');
-  if (!temas.length) { tb.innerHTML='<tr><td colspan="8"><div class="empty-row">Nenhum tema.</div></td></tr>'; return; }
-  tb.innerHTML = temas.map((t,i) => {
-    const revs = getRevList(t);
-    const done = revs.filter(e=>e.mk).length;
-    const nr = nextPendingRev(t);
-    const areaLabel = t.area ? `<span style="font-size:0.65rem;background:var(--blue3);color:var(--blue);border:1px solid rgba(56,182,255,0.3);border-radius:10px;padding:1px 7px;margin-left:4px">${t.area}</span>` : '';
+  if (!temas.length) { tb.innerHTML='<tr><td colspan="4"><div class="empty-row">Nenhum tema.</div></td></tr>'; return; }
+  tb.innerHTML = temas.map((t) => {
     return `<tr>
-      <td class="rnum">${i+1}</td>
       <td><span class="subj-name" onclick='goDetail(${JSON.stringify(t.conteudo)})'>${t.conteudo}</span></td>
-      <td style="font-size:0.75rem">${areaLabel}${t.especialidade?`<span style="font-size:0.65rem;background:var(--bg3);color:var(--muted);border:1px solid var(--border);border-radius:10px;padding:1px 7px;margin-left:2px">${t.especialidade}</span>`:''}</td>
-      <td style="color:var(--muted);font-size:0.78rem">${fmtBRY(t.data)}</td>
-      <td>${pctBar(t.pct_tema)}</td>
-      <td><span style="font-weight:600;color:var(--green)">${done}</span><span style="color:var(--dim)">/${revs.length}</span></td>
-      <td style="font-size:0.8rem;color:var(--muted)">${nr?`${nr.key}: ${fmtBRY(nr.dateISO)}`:'Todas feitas ✓'}</td>
+      <td style="font-size:0.78rem;color:var(--blue)">${t.area || '—'}</td>
+      <td style="font-size:0.78rem;color:var(--muted)">${t.especialidade || '—'}</td>
       <td style="display:flex;gap:5px"><button class="act-btn detail" onclick='goDetail(${JSON.stringify(t.conteudo)})'>🔍 Ver</button><button onclick='deleteTema(${JSON.stringify(t.conteudo)})' style="background:none;border:1px solid rgba(255,83,112,0.3);color:var(--red);border-radius:var(--r);padding:0.22rem 0.5rem;font-size:0.72rem;cursor:pointer;" onmouseover="this.style.background='var(--red3)'" onmouseout="this.style.background='none'">🗑</button></td>
     </tr>`;
   }).join('');
@@ -1495,9 +1487,9 @@ function renderTemasArvore(temas) {
           <span style="font-size:1rem">${icon}</span>
           <span style="font-weight:700;color:var(--text);flex:1">${area}</span>
           <span style="font-size:0.72rem;color:var(--muted);background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:1px 8px;">${totalArea} tema${totalArea!==1?'s':''}</span>
-          <span id="${areaId}_chevron" style="color:var(--muted);font-size:0.8rem;transition:transform 0.2s;">▼</span>
+          <span id="${areaId}_chevron" style="color:var(--muted);font-size:0.8rem;transition:transform 0.2s;transform:rotate(-90deg)">▼</span>
         </div>
-        <div id="${areaId}" style="display:block;">`;
+        <div id="${areaId}" style="display:none;">`;
 
     Object.keys(grupos[area]).sort().forEach(esp => {
       const espId = (areaId + '_' + esp).replace(/\s/g,'_');
@@ -1508,9 +1500,9 @@ function renderTemasArvore(temas) {
               <span style="color:var(--muted);font-size:0.85rem;">📁</span>
               <span style="font-weight:600;color:var(--muted);font-size:0.85rem;flex:1">${esp}</span>
               <span style="font-size:0.7rem;color:var(--dim)">${temasList.length} aula${temasList.length!==1?'s':''}</span>
-              <span id="${espId}_chevron" style="color:var(--dim);font-size:0.75rem;transition:transform 0.2s;">▼</span>
+              <span id="${espId}_chevron" style="color:var(--dim);font-size:0.75rem;transition:transform 0.2s;transform:rotate(-90deg)">▼</span>
             </div>
-            <div id="${espId}" style="display:block;">`;
+            <div id="${espId}" style="display:none;">`;
 
       temasList.forEach(t => {
         const s = temaStatus(t);
@@ -1523,9 +1515,6 @@ function renderTemasArvore(temas) {
               <div style="display:flex;align-items:center;gap:0.6rem;padding:0.4rem 1rem 0.4rem 3.2rem;border-top:1px solid rgba(255,255,255,0.04);">
                 <span style="width:7px;height:7px;border-radius:50%;background:${dotCol};flex-shrink:0;"></span>
                 <span class="subj-name" onclick='goDetail(${JSON.stringify(t.conteudo)})' style="flex:1;font-size:0.85rem;">${t.conteudo}</span>
-                ${pctBar(t.pct_tema)}
-                <span style="font-size:0.72rem;color:var(--dim);white-space:nowrap">${done}/${revs.length} rev</span>
-                <span style="font-size:0.72rem;color:var(--muted);white-space:nowrap">${nxtStr}</span>
                 <button class="act-btn detail" onclick='goDetail(${JSON.stringify(t.conteudo)})' style="font-size:0.7rem;padding:0.18rem 0.45rem;">🔍</button>
                 <button onclick='deleteTema(${JSON.stringify(t.conteudo)})' style="background:none;border:1px solid rgba(255,83,112,0.3);color:var(--red);border-radius:var(--r);padding:0.18rem 0.4rem;font-size:0.7rem;cursor:pointer;" onmouseover="this.style.background='var(--red3)'" onmouseout="this.style.background='none'">🗑</button>
               </div>`;
