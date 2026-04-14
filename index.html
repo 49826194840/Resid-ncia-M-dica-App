@@ -443,14 +443,10 @@ tbody tr:hover{background:rgba(255,255,255,0.018);}
       <button class="chip" id="chip-ok" onclick="setHomeFilter('ok',this)">Em dia</button>
     </div>
     <div style="overflow-x:auto">
-      <table style="min-width:760px">
+      <table style="min-width:400px">
         <thead><tr>
-          <th style="width:32px">#</th>
-          <th>Tema</th>
           <th style="width:80px">Estudado</th>
-          <th style="width:110px">Próxima Rev.</th>
           <th style="width:90px">Progresso</th>
-          <th style="width:150px">% Acertos</th>
           <th style="width:80px">Status</th>
           <th style="width:130px">Ação</th>
         </tr></thead>
@@ -1285,7 +1281,7 @@ function renderHome() {
   });
 
   const tb = document.getElementById('homeBody');
-  if(!filtered.length){tb.innerHTML='<tr><td colspan="8"><div class="empty-row">Nenhum tema encontrado.</div></td></tr>';return;}
+  if(!filtered.length){tb.innerHTML='<tr><td colspan="4"><div class="empty-row">Nenhum tema encontrado.</div></td></tr>';return;}
 
   tb.innerHTML = filtered.map((t,i)=>{
     const s = temaStatus(t);
@@ -1296,12 +1292,8 @@ function renderHome() {
       ? pr.map(e=>`<button class="act-btn" onclick='openModal(${JSON.stringify(t.conteudo)},${JSON.stringify(e.key)})'>✓ ${e.key}</button>`).join(' ')
       : '<span style="color:var(--dim);font-size:0.71rem">Em dia</span>';
     return `<tr>
-      <td class="rnum">${i+1}</td>
-      <td><span class="subj-name" onclick='goDetail(${JSON.stringify(t.conteudo)})'>${t.conteudo}</span> <button onclick='openEditModal(${JSON.stringify(t.conteudo)})' title="Editar nome" style="background:none;border:none;color:var(--dim);cursor:pointer;font-size:0.8rem;padding:0 3px;vertical-align:middle;opacity:0.6;" onmouseover="this.style.opacity='1';this.style.color='var(--green)'" onmouseout="this.style.opacity='0.6';this.style.color='var(--dim)'">✏️</button></td>
       <td style="color:var(--muted);font-size:0.78rem">${fmtBR(t.data)}</td>
-      <td style="font-size:0.8rem;color:${s==='hoje'?'var(--blue)':s==='atrasado'?'var(--red)':'var(--muted)'}">${nextStr}</td>
       <td>${dotProgress(t)}</td>
-      <td>${pctBar(t.pct_tema)}</td>
       <td>${badgeStatus(s, nr)}</td>
       <td style="white-space:nowrap;display:flex;gap:4px;align-items:center;flex-wrap:wrap">${actBtns} <button onclick='deleteTema(${JSON.stringify(t.conteudo)})' title="Excluir tema" style="background:none;border:1px solid rgba(255,83,112,0.3);color:var(--red);border-radius:var(--r);padding:0.18rem 0.4rem;font-size:0.68rem;cursor:pointer;transition:all 0.15s;" onmouseover="this.style.background='var(--red3)'" onmouseout="this.style.background='none'">🗑</button></td>
     </tr>`;
