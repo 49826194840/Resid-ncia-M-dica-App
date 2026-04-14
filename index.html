@@ -406,6 +406,12 @@ tbody tr:hover{background:rgba(255,255,255,0.018);}
       <div class="stat-sub">Excluindo hoje →</div>
       <div class="stat-arr">›</div>
     </div>
+    <div class="stat-card clickable" onclick="showQuickFilter('amanha')" title="Revisões agendadas para amanhã" style="border-color:rgba(56,182,255,0.25);background:linear-gradient(135deg,var(--bg2),rgba(56,182,255,0.05));">
+      <div class="stat-lbl">Revisões Amanhã</div>
+      <div class="stat-val" id="s-amanha" style="color:var(--blue)">0</div>
+      <div class="stat-sub">Agendadas para amanhã →</div>
+      <div class="stat-arr" style="color:var(--blue)">›</div>
+    </div>
     <div class="stat-card clickable" onclick="showQuickFilter('futuro')" title="Próximas revisões agendadas" style="display:none;">
       <div class="stat-lbl">Revisões Futuras</div>
       <div class="stat-val" id="s-futuro" style="color:var(--gold)">0</div>
@@ -1266,10 +1272,14 @@ function renderHome() {
   const temas = allTemas();
   const hoje  = temas.filter(t=>temaStatus(t)==='hoje').length;
   const atras = temas.filter(t=>temaStatus(t)==='atrasado').length;
-  let cFuturo = 0;
-  temas.forEach(t => getRevList(t).forEach(e => { if (!e.mk && e.d > TODAY) cFuturo++; }));
+  const AMANHA = new Date(TODAY); AMANHA.setDate(AMANHA.getDate() + 1);
+  let cFuturo = 0, cAmanha = 0;
+  temas.forEach(t => getRevList(t).forEach(e => {
+    if (!e.mk && e.d > TODAY) { cFuturo++; if (isSame(e.d, AMANHA)) cAmanha++; }
+  }));
   document.getElementById('s-hoje').textContent    = hoje;
   document.getElementById('s-atrasado').textContent = atras;
+  document.getElementById('s-amanha').textContent  = cAmanha;
   document.getElementById('s-futuro').textContent  = cFuturo;
   document.getElementById('s-total').textContent   = temas.length;
   document.getElementById('nb-cal').textContent    = hoje + atras;
@@ -1310,7 +1320,36 @@ function showQuickFilter(tipo) {
   const dot = document.getElementById('qpDot');
   const tb = document.getElementById('quickBody');
 
-  if (tipo === 'futuro') {
+  if (tipo === 'amanha') {
+    const AMANHA = new Date(TODAY); AMANHA.setDate(AMANHA.getDate() + 1);
+    const amanhaRows = [];
+    allTemas().forEach(t => {
+      getRevList(t).forEach(e => {
+        if (!e.mk && isSame(e.d, AMANHA)) amanhaRows.push({tema: t, rev: e});
+      });
+    });
+    amanhaRows.sort((a, b) => a.tema.conteudo.localeCompare(b.tema.conteudo));
+
+    document.getElementById('qpTitle').textContent = `Revisões de Amanhã (${amanhaRows.length})`;
+    dot.style.background = 'var(--blue)';
+    dot.style.boxShadow = '0 0 6px var(--blue)';
+
+    if (!amanhaRows.length) {
+      tb.innerHTML = '<tr><td colspan="5"><div class="empty-row">Nenhuma revisão agendada para amanhã.</div></td></tr>';
+    } else {
+      tb.innerHTML = amanhaRows.map((row, i) => {
+        return `<tr>
+          <td class="rnum">${i+1}</td>
+          <td><span class="subj-name" onclick='goDetail(${JSON.stringify(row.tema.conteudo)})'>${row.tema.conteudo}</span></td>
+          <td style="color:var(--blue);font-size:0.8rem;font-weight:600">${row.rev.key}: ${fmtBR(row.rev.dateISO)}</td>
+          <td style="color:var(--dim);font-size:0.76rem">amanhã</td>
+          <td>${pctBar(row.tema.pct_tema, true)}</td>
+        </tr>`;
+      }).join('');
+    }
+    panel.style.display = 'block';
+    return;
+  } else if (tipo === 'futuro') {
     // Collect all individual future pending revisions, sorted by date
     const futRows = [];
     allTemas().forEach(t => {
