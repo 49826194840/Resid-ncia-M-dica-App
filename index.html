@@ -2002,7 +2002,7 @@ function renderEspGrid(area) {
   const all = [...builtinEsps, ...customForArea];
   const grid = document.getElementById('espGrid');
   grid.innerHTML = all.map(esp =>
-    `<button type="button" class="esp-btn" onclick="selectEsp(this, ${JSON.stringify(esp)})"
+    `<button type="button" class="esp-btn" onclick='selectEsp(this, ${JSON.stringify(esp)})'
       style="padding:0.35rem 0.75rem;border:1px solid var(--border);border-radius:20px;background:var(--bg3);color:var(--muted);font-family:inherit;font-size:0.78rem;cursor:pointer;transition:all 0.15s;">
       ${esp}
     </button>`
