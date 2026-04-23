@@ -1381,7 +1381,8 @@ function showQuickFilter(tipo) {
       }).join('');
     }
   } else {
-    const temas = allTemas().filter(t => temaStatus(t)===tipo);
+    const overdueKey = t => { const pr = pendingRevs(t); return pr.length ? Math.min(...pr.map(e=>e.d.getTime())) : Infinity; };
+    const temas = allTemas().filter(t => temaStatus(t)===tipo).sort((a,b) => overdueKey(a) - overdueKey(b));
     document.getElementById('qpTitle').textContent = tipo==='hoje' ? `Revisões de Hoje (${temas.length})` : `Atrasadas (${temas.length})`;
     dot.style.background = tipo==='hoje'?'var(--blue)':'var(--red)';
     dot.style.boxShadow = tipo==='hoje'?'0 0 6px var(--blue)':'0 0 6px var(--red)';
@@ -2157,8 +2158,9 @@ function renderStreak() {
 // ═══════════════════════════════════
 function openBanner() {
   const temas = allTemas();
-  const urgentes = temas.filter(t => temaStatus(t) === 'atrasado');
-  const hoje_temas = temas.filter(t => temaStatus(t) === 'hoje');
+  const _overdueKey = t => { const pr = pendingRevs(t); return pr.length ? Math.min(...pr.map(e=>e.d.getTime())) : Infinity; };
+  const urgentes = temas.filter(t => temaStatus(t) === 'atrasado').sort((a,b) => _overdueKey(a) - _overdueKey(b));
+  const hoje_temas = temas.filter(t => temaStatus(t) === 'hoje').sort((a,b) => _overdueKey(a) - _overdueKey(b));
   const total = urgentes.length + hoje_temas.length;
 
   const MONTHS_PT2 = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
@@ -2214,8 +2216,9 @@ function closeBanner() {
 // ═══════════════════════════════════
 function renderFoco() {
   const temas = allTemas();
-  const urgentes = temas.filter(t => temaStatus(t) === 'atrasado');
-  const hoje_f   = temas.filter(t => temaStatus(t) === 'hoje');
+  const _focoKey = t => { const pr = pendingRevs(t); return pr.length ? Math.min(...pr.map(e=>e.d.getTime())) : Infinity; };
+  const urgentes = temas.filter(t => temaStatus(t) === 'atrasado').sort((a,b) => _focoKey(a) - _focoKey(b));
+  const hoje_f   = temas.filter(t => temaStatus(t) === 'hoje').sort((a,b) => _focoKey(a) - _focoKey(b));
   const total = urgentes.length + hoje_f.length;
 
   document.getElementById('nb-foco').textContent = total;
