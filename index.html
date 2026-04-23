@@ -691,7 +691,7 @@ tbody tr:hover{background:rgba(255,255,255,0.018);}
     </div>
     <div id="analiseBodySection" style="border-top:1px solid var(--border);overflow-x:auto;">
       <table style="min-width:600px;">
-        <thead><tr><th>#</th><th>Tema</th><th>% Geral</th><th>Total Q</th><th>Acertos</th><th>Erros</th><th>Revisões Feitas</th><th>Tendência</th></tr></thead>
+        <thead><tr><th>#</th><th>Tema</th><th>% Geral</th><th>Total Q</th><th>Acertos</th><th>Erros</th><th>Revisões Feitas</th><th>Tendência</th><th>Ação</th></tr></thead>
         <tbody id="analiseBody"></tbody>
       </table>
     </div>
@@ -1103,8 +1103,10 @@ function calcRevDates(studyISO){
 // DATA ACCESS
 // ═══════════════════════════════════
 function calcPctTema(tema) {
-  // Calculate pct_tema dynamically from all marks for this tema
-  const revKeys = REV_KEYS.map(k => marked[`${tema.conteudo}::${k}`]).filter(Boolean);
+  // Calculate pct_tema dynamically from all marks for this tema (R1-R7 + REX extra)
+  const allKeys = [...REV_KEYS];
+  let rn = 1; while (marked[`${tema.conteudo}::REX${rn}`]) { allKeys.push(`REX${rn}`); rn++; }
+  const revKeys = allKeys.map(k => marked[`${tema.conteudo}::${k}`]).filter(Boolean);
   if (!revKeys.length) return tema.pct_tema || '';
   const totalQ = revKeys.reduce((s,m) => s + (m.q||0), 0);
   const totalA = revKeys.reduce((s,m) => s + (m.a||0), 0);
@@ -1731,7 +1733,8 @@ function openModal(nome, key) {
   pendMark = {nome, key};
   const REV_LABELS = {R1:'Pós Aula (1ª Revisão)',R2:'2ª Revisão',R3:'3ª Revisão',R4:'4ª Revisão',R5:'5ª Revisão',R6:'6ª Revisão',R7:'7ª Revisão'};
   const Q_SUGGEST = {R1:30, R2:30, R3:25, R4:20, R5:20, R6:15, R7:15};
-  document.getElementById('modalSub').textContent = `${nome} — ${REV_LABELS[key]||key}`;
+  const keyLabel = key.startsWith('REX') ? `Revisão Extra #${key.replace('REX','')}` : (REV_LABELS[key]||key);
+  document.getElementById('modalSub').textContent = `${nome} — ${keyLabel}`;
   ['mQ','mA','mE'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('mPct').textContent='— %';
   document.getElementById('mPct').style.color='var(--muted)';
@@ -1746,6 +1749,12 @@ function openModal(nome, key) {
   }
   document.getElementById('modalBg').classList.add('open');
   document.getElementById('mQ').focus();
+}
+
+function openExtraRevModal(nome) {
+  let n = 1;
+  while (marked[`${nome}::REX${n}`]) n++;
+  openModal(nome, `REX${n}`);
 }
 
 function closeModal() {
@@ -2449,6 +2458,8 @@ function renderAnalise() {
 
     let tQ=0,tA=0,tE=0;
     revs.forEach(e=>{if(e.mk&&e.mk.q){tQ+=e.mk.q;tA+=(e.mk.a||0);tE+=(e.mk.e||0);}});
+    // Include REX marks in totals
+    let rn=1; while(marked[`${t.conteudo}::REX${rn}`]){const mx=marked[`${t.conteudo}::REX${rn}`];if(mx.q){tQ+=mx.q;tA+=(mx.a||0);tE+=(mx.e||0);}rn++;}
 
     return `<tr>
       <td class="rnum">${i+1}</td>
@@ -2462,6 +2473,7 @@ function renderAnalise() {
       <td style="text-align:center;color:var(--red)">${tE||'—'}</td>
       <td style="text-align:center;color:var(--muted)">${done}/${revs.length}</td>
       <td style="font-size:0.8rem">${trend}</td>
+      <td><button class="act-btn" style="font-size:0.78rem;padding:0.3rem 0.75rem;white-space:nowrap" onclick='openExtraRevModal(${JSON.stringify(t.conteudo)})'>+ Rev. Extra</button></td>
     </tr>`;
   }).join('');
 }
