@@ -2234,8 +2234,8 @@ function openBanner() {
         const pr = pendingRevs(t);
         return `<div style="display:flex;align-items:center;justify-content:space-between;padding:0.6rem 0.75rem;background:rgba(255,83,112,0.07);border:1px solid rgba(255,83,112,0.2);border-radius:8px;margin-bottom:6px;">
           <span style="font-weight:500;font-size:0.84rem">${t.conteudo}</span>
-          <div style="display:flex;gap:5px;flex-shrink:0">
-            ${pr.map(e=>`<button class="act-btn" onclick='openModal(${JSON.stringify(t.conteudo)},${JSON.stringify(e.key)});closeBanner()'>✓ ${e.key}</button>`).join('')}
+          <div style="display:flex;gap:5px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end">
+            ${pr.map(e=>`<button class="act-btn" onclick='openModal(${JSON.stringify(t.conteudo)},${JSON.stringify(e.key)});closeBanner()'>✓ ${e.key}</button><button class="act-btn" onclick='skipRev(${JSON.stringify(t.conteudo)},${JSON.stringify(e.key)})' style="color:#a98ed6;border-color:rgba(140,120,180,0.35)" title="Pular">⏭</button>`).join('')}
           </div>
         </div>`;
       }).join('');
@@ -2247,8 +2247,8 @@ function openBanner() {
         const pr = pendingRevs(t);
         return `<div style="display:flex;align-items:center;justify-content:space-between;padding:0.6rem 0.75rem;background:rgba(56,182,255,0.07);border:1px solid rgba(56,182,255,0.2);border-radius:8px;margin-bottom:6px;">
           <span style="font-weight:500;font-size:0.84rem">${t.conteudo}</span>
-          <div style="display:flex;gap:5px;flex-shrink:0">
-            ${pr.map(e=>`<button class="act-btn" onclick='openModal(${JSON.stringify(t.conteudo)},${JSON.stringify(e.key)});closeBanner()'>✓ ${e.key}</button>`).join('')}
+          <div style="display:flex;gap:5px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end">
+            ${pr.map(e=>`<button class="act-btn" onclick='openModal(${JSON.stringify(t.conteudo)},${JSON.stringify(e.key)});closeBanner()'>✓ ${e.key}</button><button class="act-btn" onclick='skipRev(${JSON.stringify(t.conteudo)},${JSON.stringify(e.key)})' style="color:#a98ed6;border-color:rgba(140,120,180,0.35)" title="Pular">⏭</button>`).join('')}
           </div>
         </div>`;
       }).join('');
