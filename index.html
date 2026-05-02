@@ -2445,7 +2445,9 @@ function renderAnalise() {
     .sort((a,b)=>parseFloat((b.pct_tema||'0').replace(',','.'))-parseFloat((a.pct_tema||'0').replace(',','.')));
 
   // revPercBody column headers corrected
+  const SKIPPED_TOKEN = '__skipped__';
   function pctCell(v) {
+    if(v === SKIPPED_TOKEN) return '<td style="text-align:center"><span style="font-size:0.72rem;font-weight:600;color:#a98ed6;background:rgba(140,120,180,0.1);border:1px solid rgba(140,120,180,0.3);border-radius:20px;padding:1px 7px">⏭ pulado</span></td>';
     if(!v) return '<td style="text-align:center;color:rgba(255,255,255,0.15);font-size:0.8rem">—</td>';
     const n = parseFloat(v.replace(',','.'));
     let col;
@@ -2467,6 +2469,7 @@ function renderAnalise() {
     // Read pct from marks (R1=PósAula, R2=2ªRev, ...) falling back to pct_pa/r1/r2 fields
     const getMkPct = (rKey, fallback) => {
       const mk = marked[`${t.conteudo}::${rKey}`];
+      if (mk && mk.skipped) return SKIPPED_TOKEN;
       if (mk && mk.pct) return mk.pct;
       return fallback || '';
     };
