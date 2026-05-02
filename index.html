@@ -113,6 +113,7 @@ tbody tr:hover{background:rgba(255,255,255,0.018);}
 .b-ok{background:var(--green3);color:var(--green);border:1px solid rgba(0,224,138,0.3);}
 .b-futuro{background:var(--bg4);color:var(--muted);border:1px solid var(--border);}
 .b-planilha{background:rgba(0,224,138,0.06);color:var(--green2);border:1px solid rgba(0,224,138,0.2);font-style:italic;}
+.b-pulado{background:rgba(140,120,180,0.1);color:#a98ed6;border:1px solid rgba(140,120,180,0.3);}
 
 /* ── PCT BAR ── */
 .pct-wrap{display:flex;align-items:center;gap:8px;}
@@ -134,6 +135,7 @@ tbody tr:hover{background:rgba(255,255,255,0.018);}
 .dot.atrasado{background:var(--red);border-color:var(--red);}
 .dot.futuro{background:transparent;}
 .dot.base{background:var(--green2);border-color:var(--green2);opacity:0.7;}
+.dot.pulado{background:rgba(140,120,180,0.3);border-color:#a98ed6;}
 
 /* ── ACTION BTN ── */
 .act-btn{padding:0.32rem 0.85rem;border-radius:20px;border:1px solid var(--border2);background:transparent;font-family:inherit;font-size:0.8rem;color:var(--muted);cursor:pointer;transition:all 0.18s;white-space:nowrap;display:inline-flex;align-items:center;gap:4px;}
@@ -1119,10 +1121,10 @@ function calcRevDates(studyISO){
 // DATA ACCESS
 // ═══════════════════════════════════
 function calcPctTema(tema) {
-  // Calculate pct_tema dynamically from all marks for this tema (R1-R7 + REX extra)
+  // Calculate pct_tema dynamically from all marks for this tema (R1-R7 + REX extra), excluding skipped
   const allKeys = [...REV_KEYS];
   let rn = 1; while (marked[`${tema.conteudo}::REX${rn}`]) { allKeys.push(`REX${rn}`); rn++; }
-  const revKeys = allKeys.map(k => marked[`${tema.conteudo}::${k}`]).filter(Boolean);
+  const revKeys = allKeys.map(k => marked[`${tema.conteudo}::${k}`]).filter(m => m && !m.skipped);
   if (!revKeys.length) return tema.pct_tema || '';
   const totalQ = revKeys.reduce((s,m) => s + (m.q||0), 0);
   const totalA = revKeys.reduce((s,m) => s + (m.a||0), 0);
@@ -1153,6 +1155,7 @@ function getRevList(tema) {
 }
 
 function revStatus(entry) {
+  if (entry.mk && entry.mk.skipped) return 'pulado';
   if (entry.mk) return 'done';
   if (isSame(entry.d, TODAY)) return 'hoje';
   if (entry.d < TODAY) return 'atrasado';
@@ -1161,7 +1164,7 @@ function revStatus(entry) {
 
 function temaStatus(tema) {
   const revs = getRevList(tema);
-  // Pendentes = past/today without any mark (manual or base)
+  // Pendentes = past/today without any mark (manual, base, or skip)
   const hasHoje     = revs.some(e => !e.mk && isSame(e.d, TODAY));
   const hasAtrasado = revs.some(e => !e.mk && e.d < TODAY && !isSame(e.d, TODAY));
   const hasFuturo   = revs.some(e => !e.mk && e.d > TODAY);
@@ -1219,8 +1222,9 @@ function dotProgress(tema) {
   const revs = getRevList(tema);
   return '<div class="dots">'+revs.map(e=>{
     const s = revStatus(e);
-    const cls = s==='done'?(e.mk&&e.mk.fromBase?'base':'done'):s==='hoje'?'hoje':s==='atrasado'?'atrasado':'futuro';
-    return `<div class="dot ${cls}" title="${e.key}: ${fmtBR(e.dateISO)}${e.mk?' ✓':''}"></div>`;
+    const cls = s==='pulado'?'pulado':s==='done'?(e.mk&&e.mk.fromBase?'base':'done'):s==='hoje'?'hoje':s==='atrasado'?'atrasado':'futuro';
+    const dotTitle = s==='pulado'?`${e.key}: pulada`:`${e.key}: ${fmtBR(e.dateISO)}${e.mk?' ✓':''}`;
+    return `<div class="dot ${cls}" title="${dotTitle}"></div>`;
   }).join('')+'</div>';
 }
 
@@ -1608,7 +1612,7 @@ function renderDetail(nome) {
   const revs = getRevList(tema);
 
   // KPIs
-  const manualRevs = revs.filter(e=>e.mk && !e.mk.fromBase);
+  const manualRevs = revs.filter(e=>e.mk && !e.mk.fromBase && !e.mk.skipped);
   const totalQ = manualRevs.reduce((s,e)=>s+(e.mk.q||0),0);
   const totalA = manualRevs.reduce((s,e)=>s+(e.mk.a||0),0);
   const totalE = manualRevs.reduce((s,e)=>s+(e.mk.e||0),0);
@@ -1655,20 +1659,28 @@ function renderDetail(nome) {
   tb.innerHTML = revs.map(e=>{
     const s = revStatus(e);
     let statusBadge;
-    if(e.mk && e.mk.fromBase) statusBadge='<span class="badge b-planilha">✓ Planilha</span>';
+    if(e.mk && e.mk.skipped) statusBadge='<span class="badge b-pulado">⏭ Pulada</span>';
+    else if(e.mk && e.mk.fromBase) statusBadge='<span class="badge b-planilha">✓ Planilha</span>';
     else if(e.mk) statusBadge='<span class="badge b-ok">✓ Feito</span>';
     else if(s==='hoje') statusBadge='<span class="badge b-hoje">● Hoje</span>';
     else if(s==='atrasado') statusBadge='<span class="badge b-atrasado">⚠ Atrasado</span>';
     else statusBadge='<span class="badge b-futuro">📅 Futuro</span>';
 
-    const pct = e.mk ? e.mk.pct : '';
-    const qV = (e.mk&&!e.mk.fromBase&&e.mk.q!=null)?e.mk.q:'—';
-    const aV = (e.mk&&!e.mk.fromBase&&e.mk.a!=null)?e.mk.a:'—';
-    const eV = (e.mk&&!e.mk.fromBase&&e.mk.e!=null)?e.mk.e:'—';
+    const pct = (e.mk && !e.mk.skipped) ? e.mk.pct : '';
+    const qV = (e.mk&&!e.mk.fromBase&&!e.mk.skipped&&e.mk.q!=null)?e.mk.q:'—';
+    const aV = (e.mk&&!e.mk.fromBase&&!e.mk.skipped&&e.mk.a!=null)?e.mk.a:'—';
+    const eV = (e.mk&&!e.mk.fromBase&&!e.mk.skipped&&e.mk.e!=null)?e.mk.e:'—';
 
-    const actBtn = (!e.mk || e.mk.fromBase)
-      ? `<button class="act-btn" onclick='openModal(${JSON.stringify(nome)},${JSON.stringify(e.key)})'>✓ Marcar</button>`
-      : `<button class="act-btn" style="color:var(--dim)" onclick='undoMark(${JSON.stringify(nome)},${JSON.stringify(e.key)})'>↩ Desfazer</button>`;
+    let actBtn;
+    if (e.mk && e.mk.skipped) {
+      actBtn = `<button class="act-btn" style="color:var(--dim)" onclick='undoSkip(${JSON.stringify(nome)},${JSON.stringify(e.key)})'>↩ Desfazer Pulo</button>`;
+    } else if (e.mk && !e.mk.fromBase) {
+      actBtn = `<button class="act-btn" style="color:var(--dim)" onclick='undoMark(${JSON.stringify(nome)},${JSON.stringify(e.key)})'>↩ Desfazer</button>`;
+    } else if (!e.mk) {
+      actBtn = `<button class="act-btn" onclick='openModal(${JSON.stringify(nome)},${JSON.stringify(e.key)})'>✓ Marcar</button><button class="act-btn" style="color:#a98ed6;border-color:rgba(140,120,180,0.35);margin-left:4px" onclick='skipRev(${JSON.stringify(nome)},${JSON.stringify(e.key)})'>⏭ Pular</button>`;
+    } else {
+      actBtn = `<button class="act-btn" onclick='openModal(${JSON.stringify(nome)},${JSON.stringify(e.key)})'>✓ Marcar</button>`;
+    }
 
     return `<tr>
       <td style="font-weight:600">${REV_LABELS[e.key]||e.key}</td>
@@ -1689,6 +1701,29 @@ function undoMark(nome, key) {
   renderDetail(nome);
   renderHome();
   toast('Marcação removida.','ok');
+}
+
+function skipRev(nome, key) {
+  marked[`${nome}::${key}`] = { skipped: true, date: todayISO() };
+  save();
+  _doSave();
+  toast(`${key} de "${nome}" pulada.`, 'ok');
+  renderHome();
+  renderFoco();
+  const detPage = document.getElementById('page-detalhe');
+  if(detPage && detPage.classList.contains('active')) {
+    const detNome = document.getElementById('det-nome');
+    if(detNome && detNome.textContent === nome) renderDetail(nome);
+  }
+}
+
+function undoSkip(nome, key) {
+  delete marked[`${nome}::${key}`];
+  save();
+  renderDetail(nome);
+  renderHome();
+  renderFoco();
+  toast('Pulo removido.','ok');
 }
 
 // ═══════════════════════════════════
