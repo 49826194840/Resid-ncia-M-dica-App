@@ -2,7 +2,11 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#080f1a">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>ResidênciaApp — Matheus</title>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -265,13 +269,37 @@ tbody tr:hover{background:rgba(255,255,255,0.018);}
 .qp-close:hover{color:var(--text);}
 
 @media(max-width:900px){
-  .shell{grid-template-columns:1fr;}
+  .shell{grid-template-columns:minmax(0,1fr);}
   .sidebar{display:none;}
-  .stat-row{grid-template-columns:1fr 1fr;}
-  .detail-kpis{grid-template-columns:1fr 1fr;}
-  .reg-layout{grid-template-columns:1fr;}
-  .content{padding-bottom:72px;}
+  .stat-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;}
+  .detail-kpis{grid-template-columns:minmax(0,1fr) minmax(0,1fr);}
+  #analiseKpis{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;}
+  .reg-layout{grid-template-columns:minmax(0,1fr);}
+  .content{padding-bottom:72px;min-width:0;}
   .bottom-nav{display:flex;}
+
+  /* Topbar: só o essencial cabe numa tela pequena */
+  .topbar{padding:0 0.85rem;gap:0.5rem;}
+  .brand small{display:none;}
+  .topbar-right{gap:0.4rem;}
+  #globalSearch,#globalSearch + #globalResults{display:none;}
+  .today-badge,#streakBadge{display:none!important;}
+  #saveIndicator{min-width:0;font-size:0.65rem;}
+
+  /* Calendário: rola na horizontal em vez de espremer 7 colunas */
+  .cal-wrap{overflow-x:auto;}
+  .cal-grid{grid-template-columns:repeat(7,minmax(92px,1fr));min-width:640px;}
+
+  /* Barra de busca + filtros das tabelas: quebra em duas linhas */
+  .tbl-search{flex-wrap:wrap;}
+  .tbl-search input{flex-basis:100%;}
+
+  /* Cards do Modo Foco: empilha em vez de espremer numa linha só */
+  .foco-card{flex-wrap:wrap;}
+  .foco-card-actions{justify-content:flex-start!important;width:100%;padding-left:calc(1.7rem + 6px);}
+
+  /* Cabeçalhos de seção com subtítulo: quebra em vez de espremer ao lado do título */
+  .sec-hdr{flex-wrap:wrap;row-gap:0.25rem;}
 }
 
 /* ── BOTTOM NAV (mobile) ── */
@@ -2403,13 +2431,13 @@ function renderFoco() {
       ? `<span style="font-size:0.68rem;font-weight:700;color:var(--red);background:rgba(255,83,112,0.12);border:1px solid rgba(255,83,112,0.3);border-radius:20px;padding:2px 8px">⚠ ATRASADA</span>`
       : `<span style="font-size:0.68rem;font-weight:700;color:var(--blue);background:rgba(56,182,255,0.12);border:1px solid rgba(56,182,255,0.3);border-radius:20px;padding:2px 8px">● HOJE</span>`;
 
-    return `<div style="background:var(--bg2);border:1px solid ${borderCol};background:${bgCol};border-radius:12px;padding:1rem 1.25rem;display:flex;align-items:center;gap:1rem;">
+    return `<div class="foco-card" style="background:var(--bg2);border:1px solid ${borderCol};background:${bgCol};border-radius:12px;padding:1rem 1.25rem;display:flex;align-items:center;gap:1rem;">
       ${label}
       <div style="flex:1;min-width:0;">
         <div style="font-weight:600;font-size:0.9rem;cursor:pointer;color:var(--text)" onclick='goDetail(${JSON.stringify(t.conteudo)})'>${t.conteudo}</div>
         ${pct?`<div style="font-size:0.75rem;color:${pctCls};margin-top:2px">% Geral: ${pct}</div>`:''}
       </div>
-      <div style="display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end">
+      <div class="foco-card-actions" style="display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end">
         ${pr.map(e=>`<button class="act-btn" onclick='openModal(${JSON.stringify(t.conteudo)},${JSON.stringify(e.key)})' style="font-size:0.78rem;padding:0.3rem 0.75rem">✓ ${e.key}</button><button class="act-btn" onclick='skipRev(${JSON.stringify(t.conteudo)},${JSON.stringify(e.key)})' style="font-size:0.78rem;padding:0.3rem 0.75rem;color:#a98ed6;border-color:rgba(140,120,180,0.35)" title="Pular esta revisão">⏭</button>`).join('')}
       </div>
     </div>`;
