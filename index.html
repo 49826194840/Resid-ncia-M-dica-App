@@ -324,6 +324,9 @@ tbody tr:hover{background:rgba(255,255,255,0.018);}
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
   window._sb = supabase.createClient('https://wawhcpptzssjgnbxfzqi.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indhd2hjcHB0enNzamduYnhmenFpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5MTQ2MDMsImV4cCI6MjA5MDQ5MDYwM30.ImZTFKZ78pWoNwR-gIQ-e0HF6Pc0Zf_Sf-qxTPvBHCU');
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(() => {}));
+  }
 </script>
 </head>
 <body>
@@ -1112,10 +1115,41 @@ let selectedCalDay = null;
 let currentUser = null;
 let _saveTimer = null;
 
+// ═══════════════════════════════════
+// CACHE LOCAL (offline) — guarda uma cópia dos dados no aparelho
+// ═══════════════════════════════════
+function _localDataKey() { return `resid_data_${currentUser.id}`; }
+function _localDirtyKey() { return `resid_dirty_${currentUser.id}`; }
+function saveLocalCache(data) {
+  if (!currentUser) return;
+  try { localStorage.setItem(_localDataKey(), JSON.stringify(data)); } catch(e) {}
+}
+function loadLocalCache() {
+  if (!currentUser) return null;
+  try { const raw = localStorage.getItem(_localDataKey()); return raw ? JSON.parse(raw) : null; } catch(e) { return null; }
+}
+function isDirty() { return !!currentUser && localStorage.getItem(_localDirtyKey()) === '1'; }
+function setDirty(v) {
+  if (!currentUser) return;
+  if (v) localStorage.setItem(_localDirtyKey(), '1');
+  else localStorage.removeItem(_localDirtyKey());
+}
+
 async function loadFromSupabase() {
   if (!currentUser) return;
-  // SEMPRE limpa antes de carregar — garante que usuário novo começa zerado
-  marked   = {};
+  const cached = loadLocalCache();
+
+  // Há mudanças feitas offline ainda não sincronizadas: usa elas (não sobrescreve
+  // com o que estiver no servidor) e tenta subir agora mesmo.
+  if (isDirty() && cached) {
+    marked = cached.marked || {};
+    regExtra = cached.regExtra || [];
+    customEspecialidades = cached.customEspecialidades || [];
+    _doSave();
+    return;
+  }
+
+  marked = {};
   regExtra = [];
   try {
     const { data, error } = await window._sb
@@ -1124,6 +1158,7 @@ async function loadFromSupabase() {
     // PGRST116 = nenhum registro encontrado (usuário novo) — normal, começa zerado
     if (error && error.code !== 'PGRST116') {
       console.error('Load error:', error);
+      if (cached) { marked = cached.marked || {}; regExtra = cached.regExtra || []; customEspecialidades = cached.customEspecialidades || []; }
       return;
     }
     if (data && data.data) {
@@ -1131,12 +1166,19 @@ async function loadFromSupabase() {
       regExtra = data.data.regExtra || [];
       customEspecialidades = data.data.customEspecialidades || [];
     }
-  } catch(e) { console.error('Load error:', e); }
+    saveLocalCache({ marked, regExtra, customEspecialidades });
+  } catch(e) {
+    // Sem internet ou erro de rede — usa o que tiver salvo localmente
+    console.error('Load error:', e);
+    if (cached) { marked = cached.marked || {}; regExtra = cached.regExtra || []; customEspecialidades = cached.customEspecialidades || []; }
+  }
 }
 
 async function _doSave() {
   if (!currentUser) return;
-  // Show saving indicator
+  // Grava local IMEDIATAMENTE — nunca falha, funciona sem internet
+  saveLocalCache({ marked, regExtra, customEspecialidades });
+  setDirty(true);
   const ind = document.getElementById('saveIndicator');
   if (ind) { ind.textContent = '💾 salvando...'; ind.style.color = 'var(--muted)'; }
   try {
@@ -1147,15 +1189,24 @@ async function _doSave() {
     }, { onConflict: 'user_id' });
     if (error) {
       console.error('Save error:', error);
-      if (ind) { ind.textContent = '⚠ erro ao salvar'; ind.style.color = 'var(--red)'; }
+      if (ind) { ind.textContent = '📴 salvo no aparelho'; ind.style.color = 'var(--gold)'; }
     } else {
+      setDirty(false);
       if (ind) { ind.textContent = '✓ salvo'; ind.style.color = 'var(--green)'; setTimeout(()=>{ ind.textContent=''; }, 2000); }
     }
   } catch(e) {
+    // Sem internet — já está salvo no aparelho, sincroniza quando a conexão voltar
     console.error('Save error:', e);
-    if (ind) { ind.textContent = '⚠ erro ao salvar'; ind.style.color = 'var(--red)'; }
+    if (ind) { ind.textContent = '📴 salvo no aparelho'; ind.style.color = 'var(--gold)'; }
   }
 }
+
+// Quando a internet voltar (ou o app voltar a ficar visível), tenta sincronizar
+// mudanças feitas offline
+window.addEventListener('online', () => { if (isDirty()) _doSave(); });
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && isDirty()) _doSave();
+});
 
 // save() agora salva IMEDIATAMENTE — sem delay
 function save() {
