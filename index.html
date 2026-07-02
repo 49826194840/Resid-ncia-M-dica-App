@@ -390,6 +390,11 @@ tbody tr:hover{background:rgba(255,255,255,0.018);}
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
     Análise
   </div>
+  <div class="nav-item" onclick="goPage('pulados',this)">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/><line x1="19" y1="3" x2="19" y2="21"/></svg>
+    Conteúdos Pulados
+    <span class="nav-badge" id="nb-pulados" style="background:#a98ed6;display:none">0</span>
+  </div>
   <div class="nav-section">Gestão</div>
   <div class="nav-item" onclick="goPage('registrar',this)">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
@@ -765,6 +770,36 @@ tbody tr:hover{background:rgba(255,255,255,0.018);}
 
   <div id="weakPopup" style="display:none;"></div>
   <canvas id="chartTemas" style="display:none" height="0"></canvas>
+</div>
+
+<!-- ═══ PULADOS ═══ -->
+<div class="page" id="page-pulados">
+  <div class="sec-hdr">
+    <div class="sec-title"><div class="sec-title-dot" style="background:#a98ed6"></div> Conteúdos Pulados</div>
+    <div style="font-size:0.82rem;color:var(--muted);margin-top:0.25rem">Revisões marcadas como puladas, em ordem cronológica de registro da aula</div>
+  </div>
+  <div id="puladosEmpty" style="display:none;padding:3rem;text-align:center;color:var(--dim)">
+    <div style="font-size:2.5rem;margin-bottom:0.75rem">✅</div>
+    <div style="font-size:0.95rem">Nenhuma revisão pulada. Ótimo!</div>
+  </div>
+  <div id="puladosContent">
+    <div class="tbl-wrap">
+      <div style="overflow-x:auto">
+        <table style="min-width:700px">
+          <thead><tr>
+            <th style="text-align:left;width:30px">#</th>
+            <th style="text-align:left">Tema</th>
+            <th style="text-align:left">Especialidade</th>
+            <th style="text-align:left">Data da Aula</th>
+            <th style="text-align:left">Revisão Pulada</th>
+            <th style="text-align:left">Data do Pulo</th>
+            <th style="text-align:right"></th>
+          </tr></thead>
+          <tbody id="puladosBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- ═══ REGISTRAR SIMULADO ═══ -->
@@ -1260,6 +1295,7 @@ function goPage(id, el) {
   if(id==='registrar') { renderRegList(); }
   if(id==='foco') renderFoco();
   if(id==='analise') renderAnalise();
+  if(id==='pulados') renderPulados();
   if(id==='simulado') renderSimulados();
   if(id==='config') renderConfig();
 }
@@ -1707,6 +1743,7 @@ function skipRev(nome, key) {
   marked[`${nome}::${key}`] = { skipped: true, date: todayISO() };
   save();
   _doSave();
+  updatePuladosBadge();
   toast(`${key} de "${nome}" pulada.`, 'ok');
   renderHome();
   renderFoco();
@@ -1720,10 +1757,71 @@ function skipRev(nome, key) {
 function undoSkip(nome, key) {
   delete marked[`${nome}::${key}`];
   save();
+  updatePuladosBadge();
   renderDetail(nome);
   renderHome();
   renderFoco();
   toast('Pulo removido.','ok');
+}
+
+function updatePuladosBadge() {
+  const count = Object.values(marked).filter(v => v && v.skipped).length;
+  const badge = document.getElementById('nb-pulados');
+  if (badge) { badge.textContent = count; badge.style.display = count ? '' : 'none'; }
+}
+
+function renderPulados() {
+  const REV_LABELS = {R1:'Pós Aula',R2:'2ª Rev.',R3:'3ª Rev.',R4:'4ª Rev.',R5:'5ª Rev.',R6:'6ª Rev.',R7:'7ª Rev.'};
+  const allT = allTemas();
+
+  const skipped = [];
+  Object.entries(marked).forEach(([k, v]) => {
+    if (!v || !v.skipped || k.startsWith('__')) return;
+    const sep = k.indexOf('::');
+    if (sep === -1) return;
+    const nome = k.substring(0, sep);
+    const revKey = k.substring(sep + 2);
+    const tema = allT.find(t => t.conteudo === nome);
+    if (!tema) return;
+    skipped.push({ nome, revKey, skipDate: v.date, temaData: tema.data || '', tema });
+  });
+
+  const keyOrder = k => {
+    const ri = REV_KEYS.indexOf(k);
+    if (ri >= 0) return ri;
+    const m = k.match(/^REX(\d+)$/);
+    return m ? REV_KEYS.length + parseInt(m[1]) - 1 : 999;
+  };
+  skipped.sort((a, b) => a.temaData.localeCompare(b.temaData) || keyOrder(a.revKey) - keyOrder(b.revKey));
+
+  updatePuladosBadge();
+
+  const empty = document.getElementById('puladosEmpty');
+  const content = document.getElementById('puladosContent');
+  const body = document.getElementById('puladosBody');
+  if (!body) return;
+
+  if (!skipped.length) {
+    empty.style.display = 'block';
+    content.style.display = 'none';
+    return;
+  }
+  empty.style.display = 'none';
+  content.style.display = '';
+
+  body.innerHTML = skipped.map((item, i) => {
+    const revLabel = REV_LABELS[item.revKey] || (item.revKey.startsWith('REX') ? `Extra #${item.revKey.replace('REX','')}` : item.revKey);
+    const nomeSafe = item.nome.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    return `<tr>
+      <td style="color:var(--dim);font-size:0.8rem">${i+1}</td>
+      <td><a href="#" onclick="goDetail('${nomeSafe}');return false;" style="color:var(--text);text-decoration:none;font-weight:500">${item.nome}</a></td>
+      <td style="color:var(--muted);font-size:0.82rem">${item.tema.especialidade||'—'}</td>
+      <td style="color:var(--muted);font-size:0.82rem;white-space:nowrap">${fmtBRY(item.temaData)}</td>
+      <td><span style="font-size:0.78rem;background:rgba(140,120,180,0.1);border:1px solid rgba(169,142,214,0.3);border-radius:10px;padding:2px 9px;color:#a98ed6;white-space:nowrap">⏭ ${revLabel}</span></td>
+      <td style="color:var(--dim);font-size:0.78rem;white-space:nowrap">${item.skipDate ? fmtBRY(item.skipDate) : '—'}</td>
+      <td style="text-align:right"><button onclick="undoSkip('${nomeSafe}','${item.revKey}');renderPulados();" style="background:none;border:1px solid rgba(169,142,214,0.4);color:#a98ed6;border-radius:6px;padding:3px 10px;font-size:0.75rem;cursor:pointer;white-space:nowrap">↩ Desfazer</button></td>
+    </tr>`;
+  }).join('');
 }
 
 // ═══════════════════════════════════
@@ -3138,6 +3236,7 @@ async function startApp(user) {
   document.getElementById('todayBadge').textContent = `${DAYS_PT[TODAY.getDay()]}, ${TODAY.getDate()} de ${MONTHS_PT[TODAY.getMonth()]} de ${TODAY.getFullYear()}`;
   document.getElementById('regData').value = iso(TODAY);
   renderHome();
+  updatePuladosBadge();
   renderStreak();
   setTimeout(() => {
     const urgent = allTemas().filter(t => ['hoje','atrasado'].includes(temaStatus(t)));
@@ -3210,6 +3309,10 @@ function updateBottomNav(id) {
   <div class="more-drawer-item" onclick="goPage('temas',null);closeMoreDrawer()">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
     Todos os Temas
+  </div>
+  <div class="more-drawer-item" onclick="goPage('pulados',null);closeMoreDrawer()">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/><line x1="19" y1="3" x2="19" y2="21"/></svg>
+    Conteúdos Pulados
   </div>
   <div class="more-drawer-item" onclick="goPage('registrar',null);closeMoreDrawer()">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
