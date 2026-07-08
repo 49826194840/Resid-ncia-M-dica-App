@@ -486,7 +486,7 @@ tbody tr:hover{background:rgba(255,255,255,0.018);}
   <div class="quick-panel" id="quickPanel" style="display:none">
     <div class="qp-hdr">
       <div class="qp-title"><span id="qpDot" style="width:8px;height:8px;border-radius:50%;display:inline-block"></span><span id="qpTitle"></span></div>
-      <button class="qp-close" onclick="document.getElementById('quickPanel').style.display='none'">✕</button>
+      <button class="qp-close" onclick="document.getElementById('quickPanel').style.display='none';_quickFilterTipo=null">✕</button>
     </div>
     <div style="overflow-x:auto">
       <table><thead><tr><th>#</th><th>Tema</th><th>Revisão</th><th>% Acertos</th><th>Ação</th></tr></thead>
@@ -1108,6 +1108,7 @@ let regExtra = [];
 let customEspecialidades = [];
 let pendMark = null;
 let prevPage = 'home';
+let _quickFilterTipo = null;
 let calYear  = TODAY.getFullYear();
 let calMon   = TODAY.getMonth();
 let homeFilter = 'todos';
@@ -1457,6 +1458,7 @@ function renderHome() {
 // QUICK FILTER PANEL
 // ═══════════════════════════════════
 function showQuickFilter(tipo) {
+  _quickFilterTipo = tipo;
   const panel = document.getElementById('quickPanel');
   const dot = document.getElementById('qpDot');
   const tb = document.getElementById('quickBody');
@@ -1834,6 +1836,8 @@ function skipRev(nome, key) {
     const detNome = document.getElementById('det-nome');
     if(detNome && detNome.textContent === nome) renderDetail(nome);
   }
+  if(document.getElementById('dayBanner').style.display === 'flex') openBanner();
+  if(document.getElementById('quickPanel').style.display === 'block' && _quickFilterTipo) showQuickFilter(_quickFilterTipo);
 }
 
 function undoSkip(nome, key) {
@@ -2050,6 +2054,8 @@ function confirmMark() {
     const detNome = document.getElementById('det-nome');
     if(detNome && detNome.textContent === nome) renderDetail(nome);
   }
+  if(document.getElementById('dayBanner').style.display === 'flex') openBanner();
+  if(document.getElementById('quickPanel').style.display === 'block' && _quickFilterTipo) showQuickFilter(_quickFilterTipo);
 }
 
 // ═══════════════════════════════════
@@ -2179,7 +2185,7 @@ function onRegNome() {
   const done = new Set(allTemas().map(t=>t.conteudo));
   const hits = ALL_KNOWN.filter(n=>n.toLowerCase().includes(v)).slice(0,10);
   if(!hits.length){list.style.display='none';return;}
-  list.innerHTML = hits.map(n=>`<div class="ac-item${done.has(n)?' done':''}" onclick="selNome(${JSON.stringify(n)})">${n}</div>`).join('');
+  list.innerHTML = hits.map(n=>`<div class="ac-item${done.has(n)?' done':''}" onclick='selNome(${JSON.stringify(n)})'>${n}</div>`).join('');
   list.style.display='block';
   updatePreview();
 }
