@@ -1136,43 +1136,70 @@ function setDirty(v) {
   else localStorage.removeItem(_localDirtyKey());
 }
 
-async function loadFromSupabase() {
-  if (!currentUser) return;
-  const cached = loadLocalCache();
-
-  // Há mudanças feitas offline ainda não sincronizadas: usa elas (não sobrescreve
-  // com o que estiver no servidor) e tenta subir agora mesmo.
-  if (isDirty() && cached) {
-    marked = cached.marked || {};
-    regExtra = cached.regExtra || [];
-    customEspecialidades = cached.customEspecialidades || [];
-    _doSave();
-    return;
+// ═══════════════════════════════════
+// MERGE — combina dados de dois aparelhos sem perder marcações de nenhum
+// ═══════════════════════════════════
+function mergeMarked(local, remote) {
+  local = local || {}; remote = remote || {};
+  const out = {};
+  const keys = new Set([...Object.keys(local), ...Object.keys(remote)]);
+  keys.delete('__deletedTemas');
+  for (const k of keys) {
+    const l = local[k], r = remote[k];
+    out[k] = (l && r) ? ((l._ts||0) >= (r._ts||0) ? l : r) : (l || r);
   }
+  const delLocal = local.__deletedTemas || [];
+  const delRemote = remote.__deletedTemas || [];
+  if (delLocal.length || delRemote.length) out.__deletedTemas = Array.from(new Set([...delRemote, ...delLocal]));
+  return out;
+}
+function mergeRegExtra(local, remote) {
+  const map = new Map();
+  (remote||[]).forEach(t => map.set(t.conteudo, t));
+  (local||[]).forEach(t => map.set(t.conteudo, t)); // local decide em caso de mesmo nome
+  return Array.from(map.values());
+}
+function mergeCustomEsp(local, remote) {
+  const map = new Map();
+  (remote||[]).forEach(e => map.set(`${e.nome}::${e.area}`, e));
+  (local||[]).forEach(e => map.set(`${e.nome}::${e.area}`, e));
+  return Array.from(map.values());
+}
 
-  marked = {};
-  regExtra = [];
+// Busca o que está no servidor e mescla com o estado atual (local), sem nunca
+// sobrescrever/descartar marcações feitas em outro aparelho. Ao final, sobe o
+// resultado mesclado para que os dois lados convirjam.
+async function pullAndMerge(pushAfter = true) {
+  if (!currentUser) return false;
   try {
     const { data, error } = await window._sb
       .from('user_data').select('data')
       .eq('user_id', currentUser.id).single();
     // PGRST116 = nenhum registro encontrado (usuário novo) — normal, começa zerado
-    if (error && error.code !== 'PGRST116') {
-      console.error('Load error:', error);
-      if (cached) { marked = cached.marked || {}; regExtra = cached.regExtra || []; customEspecialidades = cached.customEspecialidades || []; }
-      return;
-    }
-    if (data && data.data) {
-      marked   = data.data.marked   || {};
-      regExtra = data.data.regExtra || [];
-      customEspecialidades = data.data.customEspecialidades || [];
-    }
+    if (error && error.code !== 'PGRST116') { console.error('Sync error:', error); return false; }
+    const remote = (data && data.data) || {};
+    const before = JSON.stringify({ marked, regExtra, customEspecialidades });
+    marked = mergeMarked(marked, remote.marked);
+    regExtra = mergeRegExtra(regExtra, remote.regExtra);
+    customEspecialidades = mergeCustomEsp(customEspecialidades, remote.customEspecialidades);
+    const changed = JSON.stringify({ marked, regExtra, customEspecialidades }) !== before;
     saveLocalCache({ marked, regExtra, customEspecialidades });
+    if (pushAfter && (changed || isDirty())) await _doSave();
+    return changed;
   } catch(e) {
-    // Sem internet ou erro de rede — usa o que tiver salvo localmente
-    console.error('Load error:', e);
-    if (cached) { marked = cached.marked || {}; regExtra = cached.regExtra || []; customEspecialidades = cached.customEspecialidades || []; }
+    // Sem internet — segue com o que tiver localmente, sincroniza quando voltar
+    console.error('Sync error:', e);
+    return false;
   }
+}
+
+async function loadFromSupabase() {
+  if (!currentUser) return;
+  const cached = loadLocalCache();
+  marked = (cached && cached.marked) || {};
+  regExtra = (cached && cached.regExtra) || [];
+  customEspecialidades = (cached && cached.customEspecialidades) || [];
+  await pullAndMerge();
 }
 
 async function _doSave() {
@@ -1202,12 +1229,20 @@ async function _doSave() {
   }
 }
 
-// Quando a internet voltar (ou o app voltar a ficar visível), tenta sincronizar
-// mudanças feitas offline
-window.addEventListener('online', () => { if (isDirty()) _doSave(); });
+// Quando a internet voltar, ou o app voltar a ficar visível, ou periodicamente
+// enquanto está aberto: busca e mescla o que outros aparelhos sincronizaram.
+async function syncAndRefresh() {
+  if (!currentUser) return;
+  const changed = await pullAndMerge();
+  if (changed) refreshAllViews();
+}
+window.addEventListener('online', syncAndRefresh);
 document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible' && isDirty()) _doSave();
+  if (document.visibilityState === 'visible') syncAndRefresh();
 });
+setInterval(() => {
+  if (currentUser && document.visibilityState === 'visible') syncAndRefresh();
+}, 45000);
 
 // save() agora salva IMEDIATAMENTE — sem delay
 function save() {
@@ -1823,21 +1858,27 @@ function undoMark(nome, key) {
   toast('Marcação removida.','ok');
 }
 
+// Re-renderiza tudo que pode estar mostrando dados de revisões: home, foco,
+// detalhe da aula aberta, e os popups de agenda/quick-filter se estiverem abertos.
+function refreshAllViews() {
+  renderHome();
+  renderFoco();
+  const detPage = document.getElementById('page-detalhe');
+  if (detPage && detPage.classList.contains('active')) {
+    const detNome = document.getElementById('det-nome');
+    if (detNome) renderDetail(detNome.textContent);
+  }
+  if (document.getElementById('dayBanner').style.display === 'flex') openBanner();
+  if (document.getElementById('quickPanel').style.display === 'block' && _quickFilterTipo) showQuickFilter(_quickFilterTipo);
+}
+
 function skipRev(nome, key) {
-  marked[`${nome}::${key}`] = { skipped: true, date: todayISO() };
+  marked[`${nome}::${key}`] = { skipped: true, date: todayISO(), _ts: Date.now() };
   save();
   _doSave();
   updatePuladosBadge();
   toast(`${key} de "${nome}" pulada.`, 'ok');
-  renderHome();
-  renderFoco();
-  const detPage = document.getElementById('page-detalhe');
-  if(detPage && detPage.classList.contains('active')) {
-    const detNome = document.getElementById('det-nome');
-    if(detNome && detNome.textContent === nome) renderDetail(nome);
-  }
-  if(document.getElementById('dayBanner').style.display === 'flex') openBanner();
-  if(document.getElementById('quickPanel').style.display === 'block' && _quickFilterTipo) showQuickFilter(_quickFilterTipo);
+  refreshAllViews();
 }
 
 function undoSkip(nome, key) {
@@ -2040,22 +2081,13 @@ function confirmMark() {
   const a = parseInt(document.getElementById('mA').value)||0;
   const e = parseInt(document.getElementById('mE').value)||0;
   const pct = q>0 ? (a/q*100).toFixed(2).replace('.',',')+'%' : '';
-  marked[`${nome}::${key}`] = { q, a, e, pct, date: todayISO(), fromBase:false };
+  marked[`${nome}::${key}`] = { q, a, e, pct, date: todayISO(), fromBase:false, _ts: Date.now() };
   save();          // debounced for minor changes
   _doSave();       // immediate save on revision mark (critical data)
   closeModal();
   toast(`✓ ${key} de "${nome}" marcada!`, 'ok');
   renderStreak();
-  renderHome();
-  renderFoco();
-  // If detail page is open for this tema, re-render
-  const detPage = document.getElementById('page-detalhe');
-  if(detPage && detPage.classList.contains('active')) {
-    const detNome = document.getElementById('det-nome');
-    if(detNome && detNome.textContent === nome) renderDetail(nome);
-  }
-  if(document.getElementById('dayBanner').style.display === 'flex') openBanner();
-  if(document.getElementById('quickPanel').style.display === 'block' && _quickFilterTipo) showQuickFilter(_quickFilterTipo);
+  refreshAllViews();
 }
 
 // ═══════════════════════════════════
